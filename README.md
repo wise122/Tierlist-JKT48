@@ -1,38 +1,78 @@
-🎌 Tierlist Member JKT48
-Tierlist Member JKT48 adalah proyek berbasis web yang memungkinkan penggemar JKT48 untuk membuat peringkat anggota favorit mereka dengan mudah dan interaktif. Terinspirasi oleh alat pemeringkat seperti TierMaker dan JKT48 Member Sorter, proyek ini bertujuan untuk memberikan pengalaman yang menyenangkan bagi para penggemar dalam menyusun tier list mereka sendiri.
-TierMaker
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tierlist Member JKT48 - README</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      color: #c2185b;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    a {
+      color: #1976d2;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
 
+  <h1>📊 Tierlist Member JKT48</h1>
 
+  <p><strong>Tierlist Member JKT48</strong> adalah aplikasi berbasis web yang memungkinkan Anda menyusun daftar peringkat anggota JKT48 favorit Anda secara visual dan interaktif.</p>
 
-✨ Fitur Utama
-🖼️ Antarmuka Interaktif: Seret dan lepas gambar anggota JKT48 untuk menyusun peringkat sesuai keinginan Anda.
+  <p>Proyek ini terinspirasi dari situs <a href="https://tiermaker.com/">TierMaker</a> dan <a href="https://jkt48membersorter.vercel.app/">JKT48 Member Sorter</a>, dan bertujuan memberikan pengalaman menyenangkan bagi para fans JKT48.</p>
 
-📝 Kustomisasi Label Tier: Ubah nama setiap tier sesuai preferensi pribadi Anda.
+  <h2>✨ Fitur Unggulan</h2>
+  <ul>
+    <li>🖱️ Drag-and-drop untuk menyusun tier list.</li>
+    <li>📝 Pengeditan label tier sesuai keinginan.</li>
+    <li>💾 Simpan hasil tier list sebagai gambar.</li>
+    <li>📅 Daftar member yang diperbarui sesuai kondisi terkini JKT48.</li>
+  </ul>
 
-📤 Ekspor dan Bagikan: Simpan tier list Anda sebagai gambar
+  <h2>🚀 Cara Menggunakan</h2>
+  <ol>
+    <li>Kunjungi halaman: <a href="https://tierlist-member-jkt-48.vercel.app/tierlist">https://tierlist-member-jkt-48.vercel.app/tierlist/</a></li>
+    <li>Pilih Generasi dan Status Memmber</li>
+    <li>Seret gambar anggota JKT48 ke tier yang diinginkan.</li>
+    <li>Ubah nama tier jika diperlukan.</li>
+    <li>ScreenShot dan Bagikan Hasilnya!</li>
+  </ol>
 
-🔄 Pembaruan Berkala: Daftar anggota diperbarui secara rutin untuk mencerminkan perubahan terbaru dalam formasi JKT48.
+  <h2>🛠️ Teknologi yang Digunakan</h2>
+  <ul>
+    <li><code>HTML5</code> &amp; <code>CSS3</code></li>
+    <li><code>JavaScript</code> (drag-and-drop logic)</li>
+    <li><code>LocalStorage</code> untuk menyimpan hasil sementara</li>
+  </ul>
 
-🚀 Cara Menggunakan
-Kunjungi Halaman Proyek: Tierlist Member JKT48
+  <h2>🤝 Kontribusi</h2>
+  <p>Kontribusi sangat terbuka! Anda bisa melakukan fork dan pull request untuk memperbaiki bug atau menambahkan fitur baru.</p>
 
-Susun Tier List: Seret gambar anggota ke tier yang diinginkan.
+  <h2>📄 Lisensi</h2>
+  <p>Proyek ini dilisensikan di bawah <a href="https://github.com/MrcellSbst/Tierlist-Member-JKT48/blob/main/LICENSE">MIT License</a>.</p>
 
-Kustomisasi: Ubah nama tier sesuai keinginan Anda.
+  <hr>
+  <p>🧡 Terima kasih telah menggunakan <strong>Tierlist Member JKT48</strong>. Jangan lupa bagikan hasil tier list Anda kepada teman-teman sesama WOTA!</p>
 
-Simpan atau Bagikan: Ekspor tier list Anda sebagai gambar atau salin tautan untuk dibagikan.
-TierMaker
-
-🛠️ Teknologi yang Digunakan
-HTML5 & CSS3: Struktur dan desain halaman.
-
-JavaScript: Logika interaktif untuk drag-and-drop dan penyimpanan data.
-
-TierMaker API: Untuk inspirasi dan referensi dalam pembuatan tier list.
-
-
-🤝 Kontribusi
-Kontribusi sangat diterima! Jika Anda memiliki ide, saran, atau ingin menambahkan fitur baru, silakan fork repositori ini dan ajukan pull request.
-
-📄 Lisensi
-Proyek ini dilisensikan di bawah MIT License.
+</body>
+</html>
+ 
