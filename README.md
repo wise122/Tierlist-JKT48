@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 <div align="center">
   <h1 style="font-size: 3em">🎌 Tierlist Member JKT48</h1>
 </div>
