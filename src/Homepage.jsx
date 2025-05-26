@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Homepage.css';
-import logo from '../src/assets/icon/TierlistIcon.png';
+import logo from './assets/icon/TierlistIcon.png';
 
 const Homepage = () => {
     const [selectedMemberType, setSelectedMemberType] = useState('active');

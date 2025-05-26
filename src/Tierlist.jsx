@@ -49,7 +49,7 @@ import {
 } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import './Tierlist.css';
-import logo from '../src/assets/icon/TierlistIcon.png';
+import logo from './assets/icon/TierlistIcon.png';
 
 const TIER_COLORS = [
     { name: 'Red', value: '#FF7F7F' },
@@ -439,7 +439,7 @@ const Tierlist = () => {
                 .filter(filename => matchesGeneration(filename))
                 .map((filename) => ({
                     id: `member-${filename}`,
-                    src: `/asset/member_active/${filename}`,
+                    src: `./asset/member_active/${filename}`,
                     name: formatMemberName(filename),
                     containerId: 'image-pool'
                 }));
@@ -453,7 +453,7 @@ const Tierlist = () => {
                 .filter(filename => matchesGeneration(filename))
                 .map((filename) => ({
                     id: `member-${filename}`,
-                    src: `/asset/exmember/${filename}`,
+                    src: `./asset/exmember/${filename}`,
                     name: formatMemberName(filename),
                     containerId: 'image-pool'
                 }));
@@ -656,7 +656,7 @@ const Tierlist = () => {
                 .filter(filename => matchesGeneration(filename))
                 .map((filename) => ({
                     id: `member-${filename}`,
-                    src: `/asset/member_active/${filename}`,
+                    src: `./asset/member_active/${filename}`,
                     name: formatMemberName(filename),
                     containerId: 'image-pool'
                 }));
@@ -669,7 +669,7 @@ const Tierlist = () => {
                 .filter(filename => matchesGeneration(filename))
                 .map((filename) => ({
                     id: `member-${filename}`,
-                    src: `/asset/exmember/${filename}`,
+                    src: `./asset/exmember/${filename}`,
                     name: formatMemberName(filename),
                     containerId: 'image-pool'
                 }));
