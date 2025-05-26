@@ -1,11 +1,5 @@
-﻿
 ﻿<div align="center">
-  <h1 style="font-size: 3em">ðŸŽŒ Tierlist Member JKT48</h1>
-=======
-
-<div align="center">
   <h1 style="font-size: 3em">🎌 Tierlist Member JKT48</h1>
->>>>>>> 25fba8fd9b0eee8adde32cc1d777af2616a0dc7a
 </div>
 
 <div align="center">
@@ -15,18 +9,18 @@
   </p>
 </div>
 
-## âœ¨ Fitur Utama
+## ✨ Fitur Utama
 
 <div>
   <ul>
-    <li>ðŸ–¼ï¸ <strong>Antarmuka Interaktif:</strong> Seret dan lepas gambar anggota JKT48 untuk menyusun peringkat sesuai keinginan Anda.</li>
-    <li>ðŸ“ <strong>Kustomisasi Label Tier:</strong> Ubah nama setiap tier sesuai preferensi pribadi Anda.</li>
-    <li>ðŸ“¤ <strong>Ekspor dan Bagikan:</strong> Simpan tier list Anda sebagai gambar</li>
-    <li>ðŸ”„ <strong>Pembaruan Berkala:</strong> Daftar anggota diperbarui secara rutin untuk mencerminkan perubahan terbaru dalam formasi JKT48.</li>
+    <li>🖼️ <strong>Antarmuka Interaktif:</strong> Seret dan lepas gambar anggota JKT48 untuk menyusun peringkat sesuai keinginan Anda.</li>
+    <li>📝 <strong>Kustomisasi Label Tier:</strong> Ubah nama setiap tier sesuai preferensi pribadi Anda.</li>
+    <li>📤 <strong>Ekspor dan Bagikan:</strong> Simpan tier list Anda sebagai gambar</li>
+    <li>🔄 <strong>Pembaruan Berkala:</strong> Daftar anggota diperbarui secara rutin untuk mencerminkan perubahan terbaru dalam formasi JKT48.</li>
   </ul>
 </div>
 
-## ðŸš€ Cara Menggunakan
+## 🚀 Cara Menggunakan
 
 <div>
   <ol>
@@ -37,7 +31,7 @@
   </ol>
 </div>
 
-## ðŸ› ï¸ Teknologi yang Digunakan
+## 🛠️ Teknologi yang Digunakan
 
 <div>
   <ul>
@@ -47,7 +41,7 @@
   </ul>
 </div>
 
-## ðŸ¤ Kontribusi
+## 🤝 Kontribusi
 
 <div>
   <p>
@@ -55,7 +49,7 @@
   </p>
 </div>
 
-## ðŸ“„ Lisensi
+## 📄 Lisensi
 
 <div>
   <p>
