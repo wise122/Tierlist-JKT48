@@ -46,6 +46,8 @@
 <div>
   <p>
     Kontribusi sangat diterima! Jika Anda memiliki ide, saran, atau ingin menambahkan fitur baru, silakan fork repositori ini dan ajukan pull request.
+
+  Note: Bila ada kesalahan nama, foto, atau generasi member boleh dm X di <a href="https://x.com/criscrosbre">https://x.com/criscrosbre</a>
   </p>
 </div>
 
