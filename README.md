@@ -1,5 +1,11 @@
+﻿
 ﻿<div align="center">
   <h1 style="font-size: 3em">ðŸŽŒ Tierlist Member JKT48</h1>
+=======
+
+<div align="center">
+  <h1 style="font-size: 3em">🎌 Tierlist Member JKT48</h1>
+>>>>>>> 25fba8fd9b0eee8adde32cc1d777af2616a0dc7a
 </div>
 
 <div align="center">
