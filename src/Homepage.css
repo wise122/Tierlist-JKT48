@@ -8,6 +8,25 @@
     padding: 20px;
 }
 
+.app-logo {
+    width: 240px;
+    height: 240px;
+    margin-bottom: 1.5rem;
+    animation: logo-pulse 2s ease-in-out infinite;
+}
+
+@keyframes logo-pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
 .title {
     font-size: 2.5rem;
     color: #333;
@@ -34,6 +53,12 @@
     cursor: pointer;
     outline: none;
     transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
 }
 
 .member-dropdown:hover {
@@ -49,18 +74,19 @@
     width: 100%;
     padding: 12px;
     font-size: 1rem;
-    background-color: #ff4081;
-    color: white;
+    background-color: #c22218 !important;
+    color: white !important;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: bold;
     text-transform: uppercase;
+    margin-top: 0.5rem;
 }
 
 .start-button:hover {
-    background-color: #f50057;
+    background-color: #a11d14 !important;
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }

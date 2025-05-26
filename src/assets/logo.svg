@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="1200" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="600" cy="600" r="540" fill="#FF4081"/>
+    
+    <!-- Tier List Bars (Stylized) -->
+    <g transform="translate(300, 330)">
+        <!-- S Tier -->
+        <rect x="0" y="0" width="600" height="108" rx="24" fill="#FFFFFF" opacity="0.9"/>
+        <!-- A Tier -->
+        <rect x="0" y="132" width="540" height="108" rx="24" fill="#FFFFFF" opacity="0.8"/>
+        <!-- B Tier -->
+        <rect x="0" y="264" width="480" height="108" rx="24" fill="#FFFFFF" opacity="0.7"/>
+        <!-- C Tier -->
+        <rect x="0" y="396" width="420" height="108" rx="24" fill="#FFFFFF" opacity="0.6"/>
+        <!-- D Tier -->
+        <rect x="0" y="528" width="360" height="108" rx="24" fill="#FFFFFF" opacity="0.5"/>
+    </g>
+    
+    <!-- JKT48 Text with Enhanced Shadow -->
+    <g>
+        <!-- Deep Shadow -->
+        <text x="606" y="876" font-family="Arial Black, sans-serif" font-size="168" fill="#000000" text-anchor="middle" opacity="0.7">JKT48</text>
+        <text x="594" y="864" font-family="Arial Black, sans-serif" font-size="168" fill="#000000" text-anchor="middle" opacity="0.7">JKT48</text>
+        <!-- Main Text -->
+        <text x="600" y="870" font-family="Arial Black, sans-serif" font-size="168" fill="#FFFFFF" text-anchor="middle" stroke="#000000" stroke-width="6">JKT48</text>
+    </g>
+    
+    <!-- Tierlist Text with Background -->
+    <g>
+        <!-- Text Background -->
+        <rect x="300" y="900" width="600" height="132" rx="66" fill="#590D22" opacity="0.9"/>
+        <!-- Text -->
+        <text x="600" y="996" font-family="Arial Black, sans-serif" font-size="84" fill="#FFE5EC" text-anchor="middle" font-weight="bold">TIERLIST</text>
+    </g>
+</svg> 

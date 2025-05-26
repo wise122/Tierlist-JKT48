@@ -1,34 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Homepage.css';
+import logo from '../src/assets/icon/TierlistIcon.png';
 
 const Homepage = () => {
-    const [selectedOption, setSelectedOption] = useState('active');
+    const [selectedMemberType, setSelectedMemberType] = useState('active');
+    const [selectedGeneration, setSelectedGeneration] = useState('all');
     const navigate = useNavigate();
 
-    const handleOptionChange = (event) => {
-        setSelectedOption(event.target.value);
+    const handleMemberTypeChange = (event) => {
+        setSelectedMemberType(event.target.value);
+    };
+
+    const handleGenerationChange = (event) => {
+        setSelectedGeneration(event.target.value);
     };
 
     const handleStart = () => {
-        // Save the selection to localStorage
-        localStorage.setItem('memberType', selectedOption);
+        // Save the selections to localStorage
+        localStorage.setItem('memberType', selectedMemberType);
+        localStorage.setItem('generation', selectedGeneration);
         // Navigate to tierlist page
         navigate('/tierlist');
     };
 
     return (
         <div className="homepage-container">
+            <img src={logo} alt="JKT48 Tierlist Logo" className="app-logo" />
             <h1 className="title">JKT48 Member Tierlist</h1>
             <div className="dropdown-container">
                 <select 
-                    value={selectedOption} 
-                    onChange={handleOptionChange}
+                    value={selectedMemberType} 
+                    onChange={handleMemberTypeChange}
                     className="member-dropdown"
                 >
                     <option value="active">Active Member</option>
                     <option value="ex">Ex Member</option>
                     <option value="all">All Member</option>
+                </select>
+                <select 
+                    value={selectedGeneration} 
+                    onChange={handleGenerationChange}
+                    className="member-dropdown"
+                >
+                    <option value="all">All Generations</option>
+                    {Array.from({ length: 13 }, (_, i) => i + 1).map(gen => (
+                        <option key={gen} value={`gen${gen}`}>Generation {gen}</option>
+                    ))}
                 </select>
                 <button 
                     onClick={handleStart}
