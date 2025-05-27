@@ -429,6 +429,7 @@ const Tierlist = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingRow, setEditingRow] = useState({ name: '', color: '' });
     const [activeId, setActiveId] = useState(null);
+    const [tierlistType, setTierlistType] = useState('member');
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -446,6 +447,7 @@ const Tierlist = () => {
         const memberType = localStorage.getItem('memberType') || 'active';
         const generation = localStorage.getItem('generation') || 'all';
         
+        setTierlistType(tierlistType);
         console.log('Loading images with:', { tierlistType, memberType, generation });
 
         let imageList = [];
@@ -454,7 +456,7 @@ const Tierlist = () => {
             // Load setlist images
             imageList = setlistFiles.map((filename) => ({
                 id: `setlist-${filename}`,
-                src: `./asset/setlist/${filename}`,
+                src: `/asset/Setlist/${filename}`,
                 name: formatSetlistName(filename),
                 containerId: 'image-pool'
             }));
@@ -473,7 +475,7 @@ const Tierlist = () => {
                     .filter(filename => matchesGeneration(filename))
                     .map((filename) => ({
                         id: `member-${filename}`,
-                        src: `./asset/member_active/${filename}`,
+                        src: `/asset/member_active/${filename}`,
                         name: formatMemberName(filename),
                         containerId: 'image-pool'
                     }));
@@ -486,7 +488,7 @@ const Tierlist = () => {
                     .filter(filename => matchesGeneration(filename))
                     .map((filename) => ({
                         id: `member-${filename}`,
-                        src: `./asset/exmember/${filename}`,
+                        src: `/asset/exmember/${filename}`,
                         name: formatMemberName(filename),
                         containerId: 'image-pool'
                     }));
@@ -682,7 +684,7 @@ const Tierlist = () => {
             // Load setlist images
             imageList = setlistFiles.map((filename) => ({
                 id: `setlist-${filename}`,
-                src: `./asset/setlist/${filename}`,
+                src: `/asset/Setlist/${filename}`,
                 name: formatSetlistName(filename),
                 containerId: 'image-pool'
             }));
@@ -700,7 +702,7 @@ const Tierlist = () => {
                     .filter(filename => matchesGeneration(filename))
                     .map((filename) => ({
                         id: `member-${filename}`,
-                        src: `./asset/member_active/${filename}`,
+                        src: `/asset/member_active/${filename}`,
                         name: formatMemberName(filename),
                         containerId: 'image-pool'
                     }));
@@ -713,7 +715,7 @@ const Tierlist = () => {
                     .filter(filename => matchesGeneration(filename))
                     .map((filename) => ({
                         id: `member-${filename}`,
-                        src: `./asset/exmember/${filename}`,
+                        src: `/asset/exmember/${filename}`,
                         name: formatMemberName(filename),
                         containerId: 'image-pool'
                     }));
@@ -783,7 +785,7 @@ const Tierlist = () => {
                     <ArrowBack />
                 </IconButton>
                 <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" />
-                <h1 className="header-title">JKT48 Member Tierlist</h1>
+                <h1 className="header-title">JKT48 Tierlist</h1>
             </header>
             <DndContext
                 sensors={sensors}
@@ -855,7 +857,7 @@ const Tierlist = () => {
                     </div>
 
                     <div className="image-pool-container">
-                        <h2>Available Members ({getImagesForContainer('image-pool').length})</h2>
+                        <h2>Available {tierlistType === 'setlist' ? 'Setlists' : 'Members'} ({getImagesForContainer('image-pool').length})</h2>
                         <Droppable id="image-pool">
                             <div className="image-pool">
                                 <SortableContext 
