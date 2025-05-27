@@ -215,6 +215,25 @@ const exMemberFiles = [
     'Gen12/Gen12_aisa_maharani.webp', 'Gen12/Gen12_letycia_moreen.webp'
 ];
 
+const setlistFiles = [
+    'Aturan_Anti_Cinta.jpg',
+    'Banzai.jpg',
+    'BELIEVE.jpg',
+    'Boku_No_Taiyou.jpg',
+    'Cara_Meminum_Ramune.jpg',
+    'Demi_Seseorang.jpg',
+    'Dewi_Theater.jpg',
+    'Fajar_Sang_Idola.jpg',
+    'Fly!_Team_T.jpg',
+    'Gadis_Gadis_Remaja.jpg',
+    'Himawarigumi.jpg',
+    'Ingin_Bertemu.webp',
+    'Pajama_Drive.jpg',
+    'Sambil_Menggandeng_Erat_Tanganku.jpg',
+    'Sekarang_Sedang_Jatuh_Cinta.jpg',
+    'Tunas_di_Balik_Seragam.jpg'
+];
+
 // Helper function to properly capitalize member names
 const formatMemberName = (filename) => {
     return filename
@@ -222,6 +241,14 @@ const formatMemberName = (filename) => {
         .split('_')
         .slice(1)  // Skip the Gen*_ part
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+};
+
+// Helper function to properly format setlist names
+const formatSetlistName = (filename) => {
+    return filename
+        .split('.')[0]  // Remove file extension
+        .split('_')
         .join(' ');
 };
 
@@ -415,54 +442,61 @@ const Tierlist = () => {
     );
 
     useEffect(() => {
+        const tierlistType = localStorage.getItem('tierlistType') || 'member';
         const memberType = localStorage.getItem('memberType') || 'active';
         const generation = localStorage.getItem('generation') || 'all';
         
-        console.log('Loading images with:', { memberType, generation });
-
-        // Helper function to check if a filename matches the generation
-        const matchesGeneration = (filename) => {
-            if (generation === 'all') return true;
-            const prefix = `Gen${generation.slice(3)}_`; // Convert 'gen3' to 'Gen3_'
-            // Extract just the filename part if it contains a path
-            const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-            console.log('Checking file:', baseFilename, 'against prefix:', prefix);
-            return baseFilename.startsWith(prefix);
-        };
+        console.log('Loading images with:', { tierlistType, memberType, generation });
 
         let imageList = [];
-        
-        // Load active members if needed
-        if (memberType === 'active' || memberType === 'all') {
-            console.log('Active members before filter:', activeMemberFiles);
-            const activeMemberImages = activeMemberFiles
-                .filter(filename => matchesGeneration(filename))
-                .map((filename) => ({
-                    id: `member-${filename}`,
-                    src: `./asset/member_active/${filename}`,
-                    name: formatMemberName(filename),
-                    containerId: 'image-pool'
-                }));
-            console.log('Filtered active members:', activeMemberImages);
-            imageList = [...imageList, ...activeMemberImages];
-        }
 
-        // Load ex-members if needed
-        if (memberType === 'ex' || memberType === 'all') {
-            const exMembersList = exMemberFiles
-                .filter(filename => matchesGeneration(filename))
-                .map((filename) => ({
-                    id: `member-${filename}`,
-                    src: `./asset/exmember/${filename}`,
-                    name: formatMemberName(filename),
-                    containerId: 'image-pool'
-                }));
-            imageList = [...imageList, ...exMembersList];
+        if (tierlistType === 'setlist') {
+            // Load setlist images
+            imageList = setlistFiles.map((filename) => ({
+                id: `setlist-${filename}`,
+                src: `./asset/setlist/${filename}`,
+                name: formatSetlistName(filename),
+                containerId: 'image-pool'
+            }));
+        } else {
+            // Helper function to check if a filename matches the generation
+            const matchesGeneration = (filename) => {
+                if (generation === 'all') return true;
+                const prefix = `Gen${generation.slice(3)}_`;
+                const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
+                return baseFilename.startsWith(prefix);
+            };
+            
+            // Load active members if needed
+            if (memberType === 'active' || memberType === 'all') {
+                const activeMemberImages = activeMemberFiles
+                    .filter(filename => matchesGeneration(filename))
+                    .map((filename) => ({
+                        id: `member-${filename}`,
+                        src: `./asset/member_active/${filename}`,
+                        name: formatMemberName(filename),
+                        containerId: 'image-pool'
+                    }));
+                imageList = [...imageList, ...activeMemberImages];
+            }
+
+            // Load ex-members if needed
+            if (memberType === 'ex' || memberType === 'all') {
+                const exMembersList = exMemberFiles
+                    .filter(filename => matchesGeneration(filename))
+                    .map((filename) => ({
+                        id: `member-${filename}`,
+                        src: `./asset/exmember/${filename}`,
+                        name: formatMemberName(filename),
+                        containerId: 'image-pool'
+                    }));
+                imageList = [...imageList, ...exMembersList];
+            }
         }
 
         console.log('Final image list:', imageList);
         setImages(imageList);
-    }, [localStorage.getItem('memberType'), localStorage.getItem('generation')]);
+    }, []);
 
     const handleDragStart = (event) => {
         const { active } = event;
@@ -638,42 +672,53 @@ const Tierlist = () => {
         setRows([...initialRows]);
 
         // Reset images to initial state
+        const tierlistType = localStorage.getItem('tierlistType') || 'member';
         const memberType = localStorage.getItem('memberType') || 'active';
         const generation = localStorage.getItem('generation') || 'all';
 
-        // Helper function to check if a filename matches the generation
-        const matchesGeneration = (filename) => {
-            if (generation === 'all') return true;
-            const prefix = `Gen${generation.slice(3)}_`; // Convert 'gen3' to 'Gen3_'
-            return filename.startsWith(prefix);
-        };
-
         let imageList = [];
-        
-        // Load active members if needed
-        if (memberType === 'active' || memberType === 'all') {
-            const activeMemberImages = activeMemberFiles
-                .filter(filename => matchesGeneration(filename))
-                .map((filename) => ({
-                    id: `member-${filename}`,
-                    src: `./asset/member_active/${filename}`,
-                    name: formatMemberName(filename),
-                    containerId: 'image-pool'
-                }));
-            imageList = [...imageList, ...activeMemberImages];
-        }
 
-        // Load ex-members if needed
-        if (memberType === 'ex' || memberType === 'all') {
-            const exMembersList = exMemberFiles
-                .filter(filename => matchesGeneration(filename))
-                .map((filename) => ({
-                    id: `member-${filename}`,
-                    src: `./asset/exmember/${filename}`,
-                    name: formatMemberName(filename),
-                    containerId: 'image-pool'
-                }));
-            imageList = [...imageList, ...exMembersList];
+        if (tierlistType === 'setlist') {
+            // Load setlist images
+            imageList = setlistFiles.map((filename) => ({
+                id: `setlist-${filename}`,
+                src: `./asset/setlist/${filename}`,
+                name: formatSetlistName(filename),
+                containerId: 'image-pool'
+            }));
+        } else {
+            // Helper function to check if a filename matches the generation
+            const matchesGeneration = (filename) => {
+                if (generation === 'all') return true;
+                const prefix = `Gen${generation.slice(3)}_`;
+                return filename.startsWith(prefix);
+            };
+            
+            // Load active members if needed
+            if (memberType === 'active' || memberType === 'all') {
+                const activeMemberImages = activeMemberFiles
+                    .filter(filename => matchesGeneration(filename))
+                    .map((filename) => ({
+                        id: `member-${filename}`,
+                        src: `./asset/member_active/${filename}`,
+                        name: formatMemberName(filename),
+                        containerId: 'image-pool'
+                    }));
+                imageList = [...imageList, ...activeMemberImages];
+            }
+
+            // Load ex-members if needed
+            if (memberType === 'ex' || memberType === 'all') {
+                const exMembersList = exMemberFiles
+                    .filter(filename => matchesGeneration(filename))
+                    .map((filename) => ({
+                        id: `member-${filename}`,
+                        src: `./asset/exmember/${filename}`,
+                        name: formatMemberName(filename),
+                        containerId: 'image-pool'
+                    }));
+                imageList = [...imageList, ...exMembersList];
+            }
         }
 
         setImages(imageList);
