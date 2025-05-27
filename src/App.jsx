@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { Box } from '@mui/material'
 import Homepage from './Homepage'
 import Tierlist from './Tierlist'
@@ -23,6 +24,7 @@ function App() {
         </Box>
         <Footer />
       </Box>
+      <Analytics />
     </Router>
   )
 }
