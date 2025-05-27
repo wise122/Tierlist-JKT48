@@ -8,6 +8,5 @@
     "framework": "vite",
     "github": {
         "silent": true
-    },
-    "analytics": true
+    }
 }

@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { Box } from '@mui/material'
 import Homepage from './Homepage'
 import Tierlist from './Tierlist'
+import NotFound from './components/NotFound'
 import Footer from './components/Footer'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/tierlist" element={<Tierlist />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>
         <Footer />
