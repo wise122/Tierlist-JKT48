@@ -49,7 +49,7 @@ const Homepage = () => {
                 </div>
             )}
             <img src={logo} alt="JKT48 Tierlist Logo" className="app-logo" />
-            <h1 className="title">JKT48 Member Tierlist</h1>
+            <h1 className="title">JKT48 Tierlist</h1>
             <div className="dropdown-container">
                 <select 
                     value={tierlistType} 
