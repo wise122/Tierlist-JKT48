@@ -27,7 +27,7 @@
     <li>Kunjungi <strong>Halaman Proyek:</strong> <a href="https://tierlist-member-jkt-48.vercel.app">Tierlist Member JKT48</a></li>
     <li>Susun Tier List: Seret gambar anggota ke tier yang diinginkan.</li>
     <li>Kustomisasi: Ubah nama tier sesuai keinginan Anda.</li>
-    <li>Simpan atau Bagikan: Ekspor tier list Anda sebagai gambar atau salin tautan untuk dibagikan.</li>
+    <li>Simpan atau Bagikan: Ekspor tier list Anda sebagai gambar atau Screenshot untuk hasil lebih baik, lalu bagikan!</li>
   </ol>
 </div>
 
