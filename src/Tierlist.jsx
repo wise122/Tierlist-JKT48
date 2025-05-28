@@ -233,7 +233,10 @@ const setlistFiles = [
     'Pajama_Drive.jpg',
     'Sambil_Menggandeng_Erat_Tanganku.jpg',
     'Sekarang_Sedang_Jatuh_Cinta.jpg',
-    'Tunas_di_Balik_Seragam.jpg'
+    'Tunas_di_Balik_Seragam.jpg',
+    'Bel_Terakhir_Berbunyi.jpg',
+    'Romansa_Sang_Gadis.jpg',
+
 ];
 
 // Helper function to properly capitalize member names
