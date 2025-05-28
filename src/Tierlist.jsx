@@ -764,31 +764,59 @@ const Tierlist = () => {
         try {
             // Apply any necessary styles for better image quality
             const node = tierRowsRef.current;
+            const originalBg = node.style.backgroundColor;
+            
+            // Set background color explicitly
+            document.body.style.backgroundColor = '#1a1a2e';
             node.style.backgroundColor = '#1a1a2e';
 
-            const blob = await domtoimage.toBlob(node, {
+            // Force a repaint
+            node.style.transform = 'translateZ(0)';
+            
+            const options = {
                 quality: 1.0,
                 bgcolor: '#1a1a2e',
                 style: {
-                    'background-color': '#1a1a2e'
+                    'background-color': '#1a1a2e',
+                    'transform': 'translateZ(0)'
                 },
                 filter: (node) => {
                     // Exclude any elements you don't want in the image
                     return node.tagName !== 'BUTTON';
-                }
-            });
+                },
+                width: node.offsetWidth,
+                height: node.offsetHeight
+            };
 
-            // Create download link
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'jkt48-tierlist.png'; // Changed to PNG for better quality
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            // Try toPng first, if it fails fall back to toBlob
+            try {
+                const dataUrl = await domtoimage.toPng(node, options);
+                const link = document.createElement('a');
+                link.download = 'jkt48-tierlist.png';
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (pngError) {
+                console.warn('PNG generation failed, trying blob...', pngError);
+                const blob = await domtoimage.toBlob(node, options);
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = 'jkt48-tierlist.png';
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+            // Restore original styles
+            node.style.backgroundColor = originalBg;
+            node.style.transform = '';
+            document.body.style.backgroundColor = '';
         } catch (error) {
             console.error('Error saving tierlist:', error);
+            alert('Failed to save image. Please try again or use a screenshot instead.');
         }
     };
 
