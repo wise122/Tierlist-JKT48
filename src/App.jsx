@@ -6,10 +6,12 @@ import Homepage from './Homepage'
 import Tierlist from './Tierlist'
 import NotFound from './components/NotFound'
 import Footer from './components/Footer'
+import ViewportManager from './components/ViewportManager'
 
 function App() {
   return (
     <Router>
+      <ViewportManager />
       <Box
         sx={{
           minHeight: '100vh',
