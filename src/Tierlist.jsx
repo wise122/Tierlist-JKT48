@@ -138,7 +138,7 @@ const exMemberFiles = [
     'Gen1/Gen1_melody_nurramdhani_laksani.webp', 'Gen1/Gen1_neneng_rosediana.webp', 'Gen1/Gen1_nozawa_rena.webp',
     'Gen1/Gen1_rezky_wiranti_dhike.webp', 'Gen1/Gen1_rica_leyona.webp', 'Gen1/Gen1_sendy_ariani.webp',
     'Gen1/Gen1_shania_junianatha.webp', 'Gen1/Gen1_siti_gayatri.webp', 'Gen1/Gen1_sonia_natalia.webp',
-    'Gen1/Gen1_sonya_pandarmawan.webp', 'Gen1/Gen1_stella_cornelia.webp',
+    'Gen1/Gen1_sonya_pandarmawan.webp', 'Gen1/Gen1_stella_cornelia.webp', 'Gen1/Gen1_nabilah_ratna_ayu_azalia.jpg',
     
     // Gen2 members
     'Gen2/Gen2_alicia_chanzia.webp', 'Gen2/Gen2_althea_callista.webp', 'Gen2/Gen2_annisa_athia.webp',
@@ -170,7 +170,7 @@ const exMemberFiles = [
     'Gen4/Gen4_adriani_elisabeth.webp', 'Gen4/Gen4_christi.webp', 'Gen4/Gen4_cindy_hapsari.webp',
     'Gen4/Gen4_fidly_immanda.webp', 'Gen4/Gen4_jessica_berliana.webp', 'Gen4/Gen4_jinan_safa_safira.webp',
     'Gen4/Gen4_made_devi.webp', 'Gen4/Gen4_mega_suryani.webp', 'Gen4/Gen4_melati_putri.webp',
-    'Gen4/Gen4_nabilah_ratna_ayu_azalia.jpg', 'Gen4/Gen4_sri_lintang.webp', 'Gen4/Gen4_tan_zhi_hui_celine.jpg',
+    'Gen4/Gen4_sri_lintang.webp', 'Gen4/Gen4_tan_zhi_hui_celine.jpg',
     'Gen4/Gen4_zahra_yuriva.webp',
 
     // Gen5 members
