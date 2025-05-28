@@ -119,6 +119,9 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s ease, opacity 0.2s ease;
     cursor: grab;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .member-image.dragging {
@@ -131,6 +134,7 @@
     height: 100px;
     object-fit: cover;
     object-position: top center;
+    pointer-events: none;
 }
 
 .member-name {
@@ -143,6 +147,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    pointer-events: none;
 }
 
 
@@ -168,6 +173,7 @@
     border-radius: 8px;
     padding: 2rem;
     margin-bottom: 2rem;
+    overflow: hidden;
 }
 
 .image-pool-container h2 {
@@ -185,6 +191,7 @@
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     min-height: 140px;
+    touch-action: none;
 }
 
 

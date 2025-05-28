@@ -457,7 +457,9 @@ const Tierlist = () => {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 5,
+                distance: 1,
+                delay: 50,
+                tolerance: 5,
             },
         }),
         useSensor(KeyboardSensor, {
