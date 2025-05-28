@@ -135,10 +135,10 @@ const exMemberFiles = [
     'Gen1/Gen1_diasta_priswarini.webp', 'Gen1/Gen1_fahira.webp', 'Gen1/Gen1_frieska_anastasia_laksani.webp',
     'Gen1/Gen1_gabriella.jpg', 'Gen1/Gen1_ghaida_farisya.webp', 'Gen1/Gen1_haruka_nakagawa.jpg',
     'Gen1/Gen1_intania_pratama_ilham.webp', 'Gen1/Gen1_jessica_vania.webp', 'Gen1/Gen1_jessica_veranda.jpg',
-    'Gen1/Gen1_melody_nurramdhani_laksani.webp', 'Gen1/Gen1_neneng_rosediana.webp', 'Gen1/Gen1_nozawa_rena.webp',
+    'Gen1/Gen1_melody_nurramdhani_laksani.webp', 'Gen1/Gen1_nabilah_ratna_ayu_azalia.jpg', 'Gen1/Gen1_neneng_rosediana.webp', 'Gen1/Gen1_nozawa_rena.webp',
     'Gen1/Gen1_rezky_wiranti_dhike.webp', 'Gen1/Gen1_rica_leyona.webp', 'Gen1/Gen1_sendy_ariani.webp',
     'Gen1/Gen1_shania_junianatha.webp', 'Gen1/Gen1_siti_gayatri.webp', 'Gen1/Gen1_sonia_natalia.webp',
-    'Gen1/Gen1_sonya_pandarmawan.webp', 'Gen1/Gen1_stella_cornelia.webp', 'Gen1/Gen1_nabilah_ratna_ayu_azalia.jpg',
+    'Gen1/Gen1_sonya_pandarmawan.webp', 'Gen1/Gen1_stella_cornelia.webp', 
     
     // Gen2 members
     'Gen2/Gen2_alicia_chanzia.webp', 'Gen2/Gen2_althea_callista.webp', 'Gen2/Gen2_annisa_athia.webp',
