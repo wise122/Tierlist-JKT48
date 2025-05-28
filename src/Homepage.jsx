@@ -80,6 +80,7 @@ const Homepage = () => {
                         {Array.from({ length: 13 }, (_, i) => i + 1).map(gen => (
                             <option key={gen} value={`gen${gen}`}>Generation {gen}</option>
                         ))}
+                        <option value="genv1">JKT48V Gen 1</option>
                     </select>
                 </div>
 

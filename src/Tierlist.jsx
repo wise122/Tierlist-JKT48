@@ -122,7 +122,7 @@ const activeMemberFiles = [
     'Gen13_Bong_Aprilli.jpg', 'Gen13_Hagia_Sopia.jpg',
     'Gen13_Humaira_Ramadhani.jpg', 'Gen13_Jacqueline_Immanuela.jpg',
     'Gen13_Jemima_Evodie.jpg', 'Gen13_Mikaela_Kusjanto.jpg',
-    'Gen13_Nur_Intan.jpg'
+    'Gen13_Nur_Intan.jpg', 'JKT48V_Gen1_Kanaia_Asa.webp', 'JKT48V_Gen1_Pia_Meraleo.webp', 'JKT48V_Gen1_Tana_Nona.webp',
 ];
 
 const exMemberFiles = [
@@ -241,12 +241,15 @@ const setlistFiles = [
 
 // Helper function to properly capitalize member names
 const formatMemberName = (filename) => {
-    return filename
-        .split('.')[0]  // Remove file extension
-        .split('_')
-        .slice(1)  // Skip the Gen*_ part
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
+    const parts = filename.split('.')[0].split('_');
+    
+    // Special handling for JKT48V members
+    if (parts[0] === 'JKT48V') {
+        return parts.slice(2).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    }
+    
+    // Regular handling for other members
+    return parts.slice(1).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 };
 
 // Helper function to properly format setlist names
@@ -478,6 +481,9 @@ const Tierlist = () => {
             // Helper function to check if a filename matches the generation
             const matchesGeneration = (filename) => {
                 if (generation === 'all') return true;
+                if (generation === 'genv1') {
+                    return filename.startsWith('JKT48V_Gen1_');
+                }
                 const prefix = `Gen${generation.slice(3)}_`;
                 const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
                 return baseFilename.startsWith(prefix);
@@ -706,8 +712,12 @@ const Tierlist = () => {
             // Helper function to check if a filename matches the generation
             const matchesGeneration = (filename) => {
                 if (generation === 'all') return true;
+                if (generation === 'genv1') {
+                    return filename.startsWith('JKT48V_Gen1_');
+                }
                 const prefix = `Gen${generation.slice(3)}_`;
-                return filename.startsWith(prefix);
+                const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
+                return baseFilename.startsWith(prefix);
             };
             
             // Load active members if needed
