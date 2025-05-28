@@ -33,7 +33,9 @@ import {
     ListItemText,
     Grid,
     Box,
-    Tooltip
+    Tooltip,
+    Switch,
+    FormControlLabel
 } from '@mui/material';
 import { 
     Settings, 
@@ -47,7 +49,7 @@ import {
     Check,
     ArrowBack
 } from '@mui/icons-material';
-import html2canvas from 'html2canvas';
+import domtoimage from 'dom-to-image-more';
 import './Tierlist.css';
 import logo from './assets/icon/TierlistIcon.png';
 
@@ -278,21 +280,22 @@ const Droppable = ({id, children}) => {
     );
 };
 
-const DraggableImage = ({ image, isDragging, dragOverlay }) => {
+const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContextMenu, isSelected }) => {
     const style = {
-        opacity: isDragging ? 0.3 : 1,
+        opacity: isSelected ? 0.5 : isDragging ? 0.3 : 1,
         cursor: dragOverlay ? 'grabbing' : 'grab',
         position: dragOverlay ? 'fixed' : 'relative',
-        width: '100px',
-        height: '120px',
+        transform: dragOverlay ? 'scale(1.05)' : 'none',
         zIndex: dragOverlay ? 999 : 1,
-        backgroundColor: '#333',
+        border: isSelected ? '2px solid #4CAF50' : 'none'
     };
 
     return (
         <div
             className={`member-image ${isDragging ? 'dragging' : ''} ${dragOverlay ? 'overlay' : ''}`}
             style={style}
+            onClick={() => onImageClick && onImageClick(image)}
+            onContextMenu={(e) => onContextMenu && onContextMenu(e, image)}
         >
             <img src={image.src} alt={image.name} />
             <div className="member-name">{image.name}</div>
@@ -300,7 +303,7 @@ const DraggableImage = ({ image, isDragging, dragOverlay }) => {
     );
 };
 
-const SortableImage = ({ image, isDragging }) => {
+const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelected }) => {
     const {
         attributes,
         listeners,
@@ -327,7 +330,13 @@ const SortableImage = ({ image, isDragging }) => {
             {...attributes}
             {...listeners}
         >
-            <DraggableImage image={image} isDragging={isDragging} />
+            <DraggableImage 
+                image={image} 
+                isDragging={isDragging} 
+                onImageClick={onImageClick}
+                onContextMenu={onContextMenu}
+                isSelected={isSelected}
+            />
         </div>
     );
 };
@@ -362,59 +371,59 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, children }) => {
             case 'delete':
                 onDelete(row.id);
                 break;
+            default:
+                break;
         }
     };
 
     const textColor = getContrastColor(row.color);
 
     return (
-        <div className="tier-row">
-            <div className="row-header" style={{ backgroundColor: row.color }}>
-                <span style={{ color: textColor }}>{row.name}</span>
-                <IconButton 
-                    onClick={handleClick}
-                    size="small"
-                    style={{ color: textColor }}
-                >
-                    <Settings />
-                </IconButton>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleClose}
-                >
-                    <MenuItem onClick={() => handleAction('up')}>
-                        <ListItemIcon>
-                            <ArrowUpward fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText>Move Up</ListItemText>
-                    </MenuItem>
-                    <MenuItem onClick={() => handleAction('down')}>
-                        <ListItemIcon>
-                            <ArrowDownward fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText>Move Down</ListItemText>
-                    </MenuItem>
-                    <MenuItem onClick={() => handleAction('edit')}>
-                        <ListItemIcon>
-                            <Edit fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText>Edit Name</ListItemText>
-                    </MenuItem>
-                    <MenuItem onClick={() => handleAction('clear')}>
-                        <ListItemIcon>
-                            <Delete fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText>Clear Row</ListItemText>
-                    </MenuItem>
-                    <MenuItem onClick={() => handleAction('delete')} sx={{ color: 'error.main' }}>
-                        <ListItemIcon>
-                            <Delete fontSize="small" sx={{ color: 'error.main' }} />
-                        </ListItemIcon>
-                        <ListItemText>Delete Row</ListItemText>
-                    </MenuItem>
-                </Menu>
-            </div>
+        <div className="row-header" style={{ backgroundColor: row.color }}>
+            <span style={{ color: textColor }}>{row.name}</span>
+            <IconButton 
+                onClick={handleClick}
+                size="small"
+                style={{ color: textColor }}
+            >
+                <Settings />
+            </IconButton>
+            <Menu
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+            >
+                <MenuItem onClick={() => handleAction('up')}>
+                    <ListItemIcon>
+                        <ArrowUpward fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Move Up</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleAction('down')}>
+                    <ListItemIcon>
+                        <ArrowDownward fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Move Down</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleAction('edit')}>
+                    <ListItemIcon>
+                        <Edit fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Edit Name</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleAction('clear')}>
+                    <ListItemIcon>
+                        <Delete fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Clear Row</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleAction('delete')} sx={{ color: 'error.main' }}>
+                    <ListItemIcon>
+                        <Delete fontSize="small" sx={{ color: 'error.main' }} />
+                    </ListItemIcon>
+                    <ListItemText>Delete Row</ListItemText>
+                </MenuItem>
+            </Menu>
             {children}
         </div>
     );
@@ -430,6 +439,8 @@ const Tierlist = () => {
     const [editingRow, setEditingRow] = useState({ name: '', color: '' });
     const [activeId, setActiveId] = useState(null);
     const [tierlistType, setTierlistType] = useState('member');
+    const [isDragMode, setIsDragMode] = useState(true);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -730,48 +741,66 @@ const Tierlist = () => {
         if (!tierRowsRef.current) return;
 
         try {
-            // Scale factor to get from 100x120 to 256x307.2 (maintaining aspect ratio)
-            // 256/100 = 2.56
-            const canvas = await html2canvas(tierRowsRef.current, {
-                scale: 2.56,
-                backgroundColor: '#1a1a2e',
-                logging: false,
-                useCORS: true,
-                allowTaint: true,
-                onclone: (clonedDoc) => {
-                    // Ensure the cloned elements maintain their original aspect ratios
-                    const images = clonedDoc.getElementsByClassName('member-image');
-                    Array.from(images).forEach(img => {
-                        img.style.height = '120px';  // Force original height
-                        const imgElement = img.querySelector('img');
-                        if (imgElement) {
-                            imgElement.style.height = '100px';  // Force original image height
-                        }
-                    });
+            // Apply any necessary styles for better image quality
+            const node = tierRowsRef.current;
+            node.style.backgroundColor = '#1a1a2e';
+
+            const blob = await domtoimage.toBlob(node, {
+                quality: 1.0,
+                bgcolor: '#1a1a2e',
+                style: {
+                    'background-color': '#1a1a2e'
+                },
+                filter: (node) => {
+                    // Exclude any elements you don't want in the image
+                    return node.tagName !== 'BUTTON';
                 }
             });
 
-            // Convert to blob
-            canvas.toBlob((blob) => {
-                if (!blob) return;
-
-                // Create download link
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'jkt48-tierlist.jpg';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }, 'image/jpeg', 0.95); // High quality JPEG
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'jkt48-tierlist.png'; // Changed to PNG for better quality
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Error saving tierlist:', error);
         }
     };
 
-    const handleBack = () => {
-        navigate('/');
+    const handleImageClick = (image) => {
+        if (!isDragMode) {
+            setSelectedImage(selectedImage?.id === image.id ? null : image);
+        }
+    };
+
+    const handleImageRightClick = (e, image) => {
+        e.preventDefault(); // Prevent the default context menu
+        if (!isDragMode && image.containerId !== 'image-pool') {
+            setImages(prev => prev.map(img => 
+                img.id === image.id 
+                    ? { ...img, containerId: 'image-pool' }
+                    : img
+            ));
+            setSelectedImage(null);
+        }
+    };
+
+    const handleTierClick = (tierId) => {
+        if (!isDragMode && selectedImage) {
+            setImages(prev => {
+                const newImages = prev.map(img => 
+                    img.id === selectedImage.id 
+                        ? { ...img, containerId: tierId }
+                        : img
+                );
+                setSelectedImage(null);
+                return newImages;
+            });
+        }
     };
 
     return (
@@ -779,7 +808,7 @@ const Tierlist = () => {
             <header className="header">
                 <IconButton 
                     className="back-button"
-                    onClick={handleBack}
+                    onClick={() => navigate('/')}
                     size="large"
                 >
                     <ArrowBack />
@@ -790,22 +819,30 @@ const Tierlist = () => {
             <DndContext
                 sensors={sensors}
                 collisionDetection={pointerWithin}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragEnd={handleDragEnd}
+                onDragStart={isDragMode ? handleDragStart : null}
+                onDragOver={isDragMode ? handleDragOver : null}
+                onDragEnd={isDragMode ? handleDragEnd : null}
                 onDragCancel={() => setActiveId(null)}
             >
                 <div className="tierlist-container" ref={tierlistRef}>
                     <div className="tier-rows-container" ref={tierRowsRef}>
                         {rows.map((row) => (
-                            <TierRow
-                                key={row.id}
-                                row={row}
-                                onMove={handleRowMove}
-                                onEdit={handleRowEdit}
-                                onClear={handleRowClear}
-                                onDelete={handleRowDelete}
+                            <div 
+                                key={row.id} 
+                                className="tier-row"
+                                onClick={() => handleTierClick(row.id)}
+                                style={{ 
+                                    cursor: (!isDragMode && selectedImage) ? 'pointer' : 'default',
+                                    opacity: (!isDragMode && selectedImage) ? 0.8 : 1
+                                }}
                             >
+                                <TierRow
+                                    row={row}
+                                    onMove={handleRowMove}
+                                    onEdit={handleRowEdit}
+                                    onClear={handleRowClear}
+                                    onDelete={handleRowDelete}
+                                />
                                 <Droppable id={row.id}>
                                     <div className="tier-content">
                                         <SortableContext 
@@ -817,16 +854,41 @@ const Tierlist = () => {
                                                     key={image.id} 
                                                     image={image}
                                                     isDragging={image.id === activeId}
+                                                    onImageClick={handleImageClick}
+                                                    onContextMenu={handleImageRightClick}
+                                                    isSelected={selectedImage?.id === image.id}
                                                 />
                                             ))}
                                         </SortableContext>
                                     </div>
                                 </Droppable>
-                            </TierRow>
+                            </div>
                         ))}
                     </div>
 
                     <div className="button-container">
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={isDragMode}
+                                    onChange={(e) => {
+                                        setIsDragMode(e.target.checked);
+                                        setSelectedImage(null);
+                                    }}
+                                    color="primary"
+                                />
+                            }
+                            label={
+                                <div style={{ color: 'white' }}>
+                                    {isDragMode ? "Drag & Drop Mode" : "Click to Place Mode"}
+                                    {!isDragMode && (
+                                        <span style={{ fontSize: '0.8em', display: 'block', color: '#aaa' }}>
+                                            Right-click to return to pool
+                                        </span>
+                                    )}
+                                </div>
+                            }
+                        />
                         <Button 
                             variant="contained" 
                             color="primary" 
@@ -857,7 +919,14 @@ const Tierlist = () => {
                     </div>
 
                     <div className="image-pool-container">
-                        <h2>Available {tierlistType === 'setlist' ? 'Setlists' : 'Members'} ({getImagesForContainer('image-pool').length})</h2>
+                        <h2>
+                            Available {tierlistType === 'setlist' ? 'Setlists' : 'Members'} ({getImagesForContainer('image-pool').length})
+                            {!isDragMode && selectedImage && (
+                                <span style={{ fontSize: '0.8em', marginLeft: '10px', color: '#4CAF50' }}>
+                                    Selected: {selectedImage.name}
+                                </span>
+                            )}
+                        </h2>
                         <Droppable id="image-pool">
                             <div className="image-pool">
                                 <SortableContext 
@@ -869,6 +938,9 @@ const Tierlist = () => {
                                             key={image.id} 
                                             image={image}
                                             isDragging={image.id === activeId}
+                                            onImageClick={handleImageClick}
+                                            onContextMenu={handleImageRightClick}
+                                            isSelected={selectedImage?.id === image.id}
                                         />
                                     ))}
                                 </SortableContext>
@@ -877,7 +949,7 @@ const Tierlist = () => {
                     </div>
 
                     <DragOverlay>
-                        {activeId ? (
+                        {activeId && isDragMode ? (
                             <DraggableImage 
                                 image={images.find(img => img.id === activeId)}
                                 dragOverlay
@@ -886,6 +958,7 @@ const Tierlist = () => {
                     </DragOverlay>
                 </div>
             </DndContext>
+
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <DialogTitle>Edit Row</DialogTitle>
                 <DialogContent>
