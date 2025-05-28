@@ -5,7 +5,7 @@
 <div align="center">
   <h2>Tierlist JKT48 Web Application</h2>
   <p>
-    Tierlist Member JKT48 adalah proyek berbasis web yang memungkinkan penggemar JKT48 untuk membuat peringkat anggota/setlist favorit mereka dengan mudah dan interaktif. Terinspirasi oleh alat pemeringkat seperti <a href="https://tiermaker.com/">TierMaker</a> dan <a href="https://jkt48membersorter.vercel.app">JKT48 Member Sorter</a>, proyek ini bertujuan untuk memberikan pengalaman yang menyenangkan bagi para penggemar dalam menyusun tier list mereka sendiri.
+    Tierlist JKT48 adalah proyek berbasis web yang memungkinkan penggemar JKT48 untuk membuat peringkat anggota/setlist favorit mereka dengan mudah dan interaktif. Terinspirasi oleh alat pemeringkat seperti <a href="https://tiermaker.com/">TierMaker</a> dan <a href="https://jkt48membersorter.vercel.app">JKT48 Member Sorter</a>, proyek ini bertujuan untuk memberikan pengalaman yang menyenangkan bagi para penggemar dalam menyusun tier list mereka sendiri.
   </p>
 </div>
 
@@ -55,6 +55,6 @@
 
 <div>
   <p>
-    Proyek ini dilisensikan di bawah <a href="https://github.com/MrcellSbst/Tierlist-Member-JKT48/blob/main/LICENSE.txt">MIT License</a>.
+    Proyek ini dilisensikan di bawah <a href="https://github.com/MrcellSbst/Tierlist-JKT48/blob/main/LICENSE">MIT License</a>.
   </p>
 </div>
