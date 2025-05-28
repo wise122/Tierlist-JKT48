@@ -35,7 +35,8 @@ import {
     Box,
     Tooltip,
     Switch,
-    FormControlLabel
+    FormControlLabel,
+    Typography
 } from '@mui/material';
 import { 
     Settings, 
@@ -447,6 +448,7 @@ const Tierlist = () => {
     const [tierlistType, setTierlistType] = useState('member');
     const [isDragMode, setIsDragMode] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [showWelcomeDialog, setShowWelcomeDialog] = useState(true);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -829,6 +831,50 @@ const Tierlist = () => {
                 <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" />
                 <h1 className="header-title">JKT48 Tierlist</h1>
             </header>
+
+            {/* Welcome Dialog */}
+            <Dialog 
+                open={showWelcomeDialog} 
+                onClose={() => setShowWelcomeDialog(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>Selamat Datang di JKT48 Tierlist! 👋</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="h6" gutterBottom>
+                            Panduan Penggunaan Tierlist:
+                        </Typography>
+                        <Typography variant="body1" paragraph>
+                            1. Kamu bisa menggunakan dua mode interaksi:
+                        </Typography>
+                        <Box sx={{ pl: 3, mb: 2 }}>
+                            <Typography variant="body1" gutterBottom>
+                                • <strong>Mode Drag and Drop:</strong> Seret foto member ke tier yang diinginkan
+                            </Typography>
+                            <Typography variant="body1" gutterBottom>
+                                • <strong>Mode Select to Place:</strong> Klik foto member terlebih dahulu, lalu klik tier tujuan. Klik kanan (untuk Mobile User, Ketika tidak sedang memilih foto member, klik tahan sebentar) untuk mengembalikan Foto member ke pool
+                            </Typography>
+                        </Box>
+                        <Typography variant="body1" paragraph>
+                            2. <strong>Mobile User:</strong> Aplikasi ini dioptimalkan untuk tampilan desktop. Silakan zoom out untuk melihat keseluruhan tampilan.
+                        </Typography>
+                        <Typography variant="body1">
+                            3. Gunakan tombol-tombol di bawah untuk menambah tier, mengulang dari awal, atau menyimpan tierlist sebagai gambar.
+                        </Typography>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button 
+                        onClick={() => setShowWelcomeDialog(false)}
+                        variant="contained"
+                        color="primary"
+                    >
+                        Mengerti!
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <DndContext
                 sensors={sensors}
                 collisionDetection={pointerWithin}
