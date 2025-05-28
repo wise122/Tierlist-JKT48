@@ -6,7 +6,7 @@ body {
     background-color: #1a1a2e;
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    box-sizing: border-box;
+    min-width: 1024px;
 }
 
 * {
@@ -201,68 +201,6 @@ body {
 
 [data-dnd-kit-overlay] {
     position: fixed !important;
-}
-
-
-/* Responsive styles */
-
-@media (max-width: 768px) {
-    .tierlist-container {
-        padding: 0.5rem;
-        padding-top: calc(64px + 0.5rem);
-    }
-    .row-header {
-        width: 80px;
-        padding: 0.5rem;
-    }
-    .row-header span {
-        font-size: 0.9rem;
-    }
-    .tier-content {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 0.5rem;
-        padding: 0.5rem;
-        min-height: 110px;
-    }
-    .member-image {
-        width: 80px;
-        height: 100px;
-    }
-    .member-image img {
-        height: 80px;
-    }
-    .member-name {
-        font-size: 10px;
-    }
-    .button-container {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    .action-button {
-        width: 100% !important;
-        min-width: unset !important;
-    }
-    .image-pool-container {
-        padding: 1rem;
-    }
-    .image-pool {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 0.5rem;
-        padding: 0.5rem;
-    }
-    .image-pool-container h2 {
-        font-size: 1rem;
-    }
-    .header {
-        padding: 0 1rem;
-    }
-    .header-title {
-        font-size: 1.2rem;
-    }
-    .header-logo {
-        height: 36px;
-        width: 36px;
-    }
 }
 
 
