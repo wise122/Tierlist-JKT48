@@ -52,6 +52,7 @@ import {
 } from '@mui/icons-material';
 import domtoimage from 'dom-to-image-more';
 import './Tierlist.css';
+import './TierlistPage.css';
 import logo from './assets/icon/TierlistIcon.png';
 
 const TIER_COLORS = [
@@ -819,7 +820,7 @@ const Tierlist = () => {
     };
 
     return (
-        <>
+        <div className="tierlist-page">
             <header className="header">
                 <IconButton 
                     className="back-button"
@@ -1069,7 +1070,7 @@ const Tierlist = () => {
                     <Button onClick={handleRowSave}>Save</Button>
                 </DialogActions>
             </Dialog>
-        </>
+        </div>
     );
 };
 
