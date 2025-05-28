@@ -138,7 +138,7 @@ const exMemberFiles = [
     'Gen1/Gen1_melody_nurramdhani_laksani.webp', 'Gen1/Gen1_nabilah_ratna_ayu_azalia.jpg', 'Gen1/Gen1_neneng_rosediana.webp', 'Gen1/Gen1_nozawa_rena.webp',
     'Gen1/Gen1_rezky_wiranti_dhike.webp', 'Gen1/Gen1_rica_leyona.webp', 'Gen1/Gen1_sendy_ariani.webp',
     'Gen1/Gen1_shania_junianatha.webp', 'Gen1/Gen1_siti_gayatri.webp', 'Gen1/Gen1_sonia_natalia.webp',
-    'Gen1/Gen1_sonya_pandarmawan.webp', 'Gen1/Gen1_stella_cornelia.webp', 
+    'Gen1/Gen1_sonya_pandarmawan.webp', 'Gen1/Gen1_stella_cornelia.webp',
     
     // Gen2 members
     'Gen2/Gen2_alicia_chanzia.webp', 'Gen2/Gen2_althea_callista.webp', 'Gen2/Gen2_annisa_athia.webp',
@@ -222,6 +222,7 @@ const exMemberFiles = [
 const setlistFiles = [
     'Aturan_Anti_Cinta.jpg',
     'Banzai.jpg',
+    'Bel_Terakhir_Berbunyi.jpg',
     'BELIEVE.jpg',
     'Boku_No_Taiyou.jpg',
     'Cara_Meminum_Ramune.jpg',
@@ -233,11 +234,13 @@ const setlistFiles = [
     'Himawarigumi.jpg',
     'Ingin_Bertemu.webp',
     'Pajama_Drive.jpg',
+    'Saka_Agari.jpg',
+    'Romansa_Sang_Gadis.jpg',
     'Sambil_Menggandeng_Erat_Tanganku.jpg',
     'Sekarang_Sedang_Jatuh_Cinta.jpg',
     'Tunas_di_Balik_Seragam.jpg',
-    'Bel_Terakhir_Berbunyi.jpg',
-    'Romansa_Sang_Gadis.jpg',
+    
+    
 
 ];
 
