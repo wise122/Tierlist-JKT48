@@ -135,14 +135,14 @@ const exMemberFiles = [
     'Gen1/Gen1_diasta_priswarini.webp', 'Gen1/Gen1_fahira.webp', 'Gen1/Gen1_frieska_anastasia_laksani.webp',
     'Gen1/Gen1_gabriella.jpg', 'Gen1/Gen1_ghaida_farisya.webp', 'Gen1/Gen1_haruka_nakagawa.jpg',
     'Gen1/Gen1_intania_pratama_ilham.webp', 'Gen1/Gen1_jessica_vania.webp', 'Gen1/Gen1_jessica_veranda.jpg',
-    'Gen1/Gen1_melody_nurramdhani_laksani.webp', 'Gen1/Gen1_nabilah_ratna_ayu_azalia.jpg', 'Gen1/Gen1_neneng_rosediana.webp', 'Gen1/Gen1_nozawa_rena.webp',
+    'Gen1/Gen1_melody_nurramdhani_laksani.webp', 'Gen1/Gen1_nabilah_ratna_ayu_azalia.jpg', 'Gen1/Gen1_neneng_rosediana.webp', 'Gen1/Gen1_rena_nozawa.webp',
     'Gen1/Gen1_rezky_wiranti_dhike.webp', 'Gen1/Gen1_rica_leyona.webp', 'Gen1/Gen1_sendy_ariani.webp',
     'Gen1/Gen1_shania_junianatha.webp', 'Gen1/Gen1_siti_gayatri.webp', 'Gen1/Gen1_sonia_natalia.webp',
     'Gen1/Gen1_sonya_pandarmawan.webp', 'Gen1/Gen1_stella_cornelia.webp',
     
     // Gen2 members
     'Gen2/Gen2_alicia_chanzia.webp', 'Gen2/Gen2_althea_callista.webp', 'Gen2/Gen2_annisa_athia.webp',
-    'Gen2/Gen2_chikano_rina.jpg', 'Gen2/Gen2_cindy_yuvia.webp', 'Gen2/Gen2_della_delila.webp',
+    'Gen2/Gen2_rina_chikano.jpg', 'Gen2/Gen2_cindy_yuvia.webp', 'Gen2/Gen2_della_delila.webp',
     'Gen2/Gen2_dellia_erdita.webp', 'Gen2/Gen2_dena_siti_rohyati.webp', 'Gen2/Gen2_dwi_putri_bonita.webp',
     'Gen2/Gen2_fakhriyani_shafariyanti.webp', 'Gen2/Gen2_intar_putri_kariina.webp', 'Gen2/Gen2_jennifer_hanna.webp',
     'Gen2/Gen2_jennifer_rachel_natasya.webp', 'Gen2/Gen2_lidya_maulida_djuhandar.webp', 'Gen2/Gen2_nadhifa_karimah.webp',
@@ -184,7 +184,7 @@ const exMemberFiles = [
     // Gen6 members
     'Gen6/Gen6_amanda_priscella.webp', 'Gen6/Gen6_anastasya_narwastu.webp', 'Gen6/Gen6_ariella_calista.webp',
     'Gen6/Gen6_denise_caroline.webp', 'Gen6/Gen6_erika_ebisawa.webp', 'Gen6/Gen6_erika_sintia.webp',
-    'Gen6/Gen6_graciella_ruth.webp', 'Gen6/Gen6_jihan_miftahul.webp', 'Gen6/Gen6_kandiya_rafa.webp',
+    'Gen6/Gen6_graciella_ruth.webp', 'Gen6/Gen6_jihan_miftahul.webp', 'Gen6/Gen6_kandiya_rafa.webp','Gen6/Gen6_Kawamoto_Saya.webp',
     'Gen6/Gen6_putri_cahyaning.webp', 'Gen6/Gen6_rinanda_syahputri.webp', 'Gen6/Gen6_riska_amelia.webp',
     'Gen6/Gen6_shalza_grasita.webp',
 
