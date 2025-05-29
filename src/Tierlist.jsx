@@ -862,8 +862,14 @@ const Tierlist = () => {
                 >
                     <ArrowBack />
                 </IconButton>
-                <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" />
-                <h1 className="header-title">JKT48 Tierlist</h1>
+                <div 
+                    className="header-title-container"
+                    onClick={() => navigate('/')}
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                >
+                    <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" />
+                    <h1 className="header-title">JKT48 Tierlist</h1>
+                </div>
             </header>
 
             {/* Welcome Dialog */}
