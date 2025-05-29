@@ -184,7 +184,7 @@ const exMemberFiles = [
     // Gen6 members
     'Gen6/Gen6_amanda_priscella.webp', 'Gen6/Gen6_anastasya_narwastu.webp', 'Gen6/Gen6_ariella_calista.webp',
     'Gen6/Gen6_denise_caroline.webp', 'Gen6/Gen6_erika_ebisawa.webp', 'Gen6/Gen6_erika_sintia.webp',
-    'Gen6/Gen6_graciella_ruth.webp', 'Gen6/Gen6_jihan_miftahul.webp', 'Gen6/Gen6_kandiya_rafa.webp','Gen6/Gen6_Kawamoto_Saya.webp',
+    'Gen6/Gen6_graciella_ruth.webp', 'Gen6/Gen6_jihan_miftahul.webp', 'Gen6/Gen6_kandiya_rafa.webp','Gen6/Gen6_Saya_Kawamoto.webp',
     'Gen6/Gen6_putri_cahyaning.webp', 'Gen6/Gen6_rinanda_syahputri.webp', 'Gen6/Gen6_riska_amelia.webp',
     'Gen6/Gen6_shalza_grasita.webp',
 
