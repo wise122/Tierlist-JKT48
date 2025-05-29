@@ -882,7 +882,7 @@ const Tierlist = () => {
                 <DialogTitle>Selamat Datang di JKT48 Tierlist! 👋</DialogTitle>
                 <DialogContent>
                     <Box sx={{ mb: 2 }}>
-                        <Typography variant="h6" gutterBottom>
+                        <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                             Panduan Penggunaan Tierlist:
                         </Typography>
                         <Typography variant="body1" paragraph>
@@ -901,6 +901,9 @@ const Tierlist = () => {
                         </Typography>
                         <Typography variant="body1">
                             3. Gunakan tombol-tombol di bawah untuk menambah tier, mengulang dari awal, atau menyimpan tierlist sebagai gambar.
+                        </Typography>
+                        <Typography variant="body1" sx={{ mt: 2, color: 'warning.main' }}>
+                            <strong>Disclaimer:</strong> Pembuat Website ini tidak bertanggung jawab atas segala akibat dari hasil tierlist. Berani membagikan tierlist ini berarti pengguna berani menanggung segala resiko yang muncul (termasuk dongfol).
                         </Typography>
                     </Box>
                 </DialogContent>
