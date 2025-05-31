@@ -1030,7 +1030,8 @@ const Tierlist = () => {
                                 </span>
                             )}
                         </h2>
-                         {/* Search Box */}
+                         {/* Akan Aktif jika member/setlist lebih dari 50 */}
+                        {getImagesForContainer('image-pool').length > 50 && (
                         <TextField
                             variant="outlined"
                             size="small"
@@ -1039,6 +1040,8 @@ const Tierlist = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             sx={{ mb: 2, width: '100%' }}
                         />
+                        )}
+
                         <Droppable id="image-pool">
                             <div className="image-pool">
                                 <SortableContext 
