@@ -36,7 +36,9 @@ import {
     Tooltip,
     Switch,
     FormControlLabel,
-    Typography
+    Typography,
+    InputAdornment,
+    Paper
 } from '@mui/material';
 import { 
     Settings, 
@@ -48,7 +50,8 @@ import {
     Refresh, 
     Save,
     Check,
-    ArrowBack
+    ArrowBack,
+    Search
 } from '@mui/icons-material';
 import domtoimage from 'dom-to-image-more';
 import './Tierlist.css';
@@ -453,6 +456,7 @@ const Tierlist = () => {
     const [isDragMode, setIsDragMode] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null);
     const [showWelcomeDialog, setShowWelcomeDialog] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -692,7 +696,14 @@ const Tierlist = () => {
     };
 
     const getImagesForContainer = (containerId) => {
-        return images.filter(img => img.containerId === containerId);
+        const filteredImages = images.filter(img => {
+            const matchesContainer = img.containerId === containerId;
+            const matchesSearch = containerId === 'image-pool' 
+                ? img.name.toLowerCase().includes(searchTerm.toLowerCase())
+                : true;
+            return matchesContainer && matchesSearch;
+        });
+        return filteredImages;
     };
 
     const activeImage = activeId ? images.find(img => img.id === activeId) : null;
@@ -1021,14 +1032,61 @@ const Tierlist = () => {
                     </div>
 
                     <div className="image-pool-container">
-                        <h2>
-                            Available {tierlistType === 'setlist' ? 'Setlists' : 'Members'} ({getImagesForContainer('image-pool').length})
-                            {!isDragMode && selectedImage && (
-                                <span style={{ fontSize: '0.8em', marginLeft: '10px', color: '#4CAF50' }}>
-                                    Selected: {selectedImage.name}
-                                </span>
-                            )}
-                        </h2>
+                        <div className="image-pool-header">
+                            <h2>
+                                Available {tierlistType === 'setlist' ? 'Setlists' : 'Members'} ({getImagesForContainer('image-pool').length})
+                                {!isDragMode && selectedImage && (
+                                    <span style={{ fontSize: '0.8em', marginLeft: '10px', color: '#4CAF50' }}>
+                                        Selected: {selectedImage.name}
+                                    </span>
+                                )}
+                            </h2>
+                            <Paper 
+                                component="form" 
+                                sx={{ 
+                                    p: '2px 4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    width: { xs: '100%', sm: '300px' },
+                                    backgroundColor: '#2a2a3a',
+                                    marginLeft: { xs: 0, sm: 2 }
+                                }}
+                            >
+                                <InputAdornment position="start" sx={{ pl: 1 }}>
+                                    <Search sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                                </InputAdornment>
+                                <TextField
+                                    sx={{
+                                        flex: 1,
+                                        '& .MuiInputBase-input': {
+                                            color: 'white',
+                                            pl: 1,
+                                            '&::placeholder': {
+                                                color: 'rgba(255, 255, 255, 0.7)',
+                                                opacity: 1
+                                            }
+                                        },
+                                        '& .MuiInputBase-root': {
+                                            '&:before, &:after': {
+                                                display: 'none',
+                                            },
+                                            padding: '4px 8px'
+                                        },
+                                        '& .MuiInput-underline:before': {
+                                            display: 'none',
+                                        }
+                                    }}
+                                    placeholder={`Search ${tierlistType === 'setlist' ? 'setlists' : 'members'}...`}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    variant="standard"
+                                    fullWidth
+                                    inputProps={{
+                                        style: { paddingLeft: '8px' }
+                                    }}
+                                />
+                            </Paper>
+                        </div>
                         <Droppable id="image-pool">
                             <div className="image-pool">
                                 <SortableContext 

@@ -8,3 +8,28 @@
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
+
+.image-pool-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.image-pool-header h2 {
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+}
+
+@media (max-width: 600px) {
+    .image-pool-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .image-pool-header h2 {
+        text-align: center;
+    }
+}
