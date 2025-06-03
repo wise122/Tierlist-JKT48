@@ -256,7 +256,7 @@ const formatMemberName = (filename) => {
     
     // Special handling for JKT48V members
     if (parts[0] === 'JKT48V') {
-        return parts.slice(2).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+        return parts.slice(3).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     }
     
     // Regular handling for other members
@@ -516,7 +516,8 @@ const Tierlist = () => {
             const matchesGeneration = (filename) => {
                 if (generation === 'all') return true;
                 if (generation === 'genv1') {
-                    return filename.startsWith('JKT48V_Gen1_');
+                    const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
+                    return baseFilename.startsWith('JKT48V_Gen1_');
                 }
                 const prefix = `Gen${generation.slice(3)}_`;
                 const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
@@ -542,7 +543,7 @@ const Tierlist = () => {
                     .filter(filename => matchesGeneration(filename))
                     .map((filename) => ({
                         id: `member-${filename}`,
-                        src: `/asset/exmember/${filename}`,
+                        src: `/asset/exmember/${filename.replace(/\\/g, '/')}`,
                         name: formatMemberName(filename),
                         containerId: 'image-pool'
                     }));
@@ -755,7 +756,8 @@ const Tierlist = () => {
             const matchesGeneration = (filename) => {
                 if (generation === 'all') return true;
                 if (generation === 'genv1') {
-                    return filename.startsWith('JKT48V_Gen1_');
+                    const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
+                    return baseFilename.startsWith('JKT48V_Gen1_');
                 }
                 const prefix = `Gen${generation.slice(3)}_`;
                 const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
@@ -781,7 +783,7 @@ const Tierlist = () => {
                     .filter(filename => matchesGeneration(filename))
                     .map((filename) => ({
                         id: `member-${filename}`,
-                        src: `/asset/exmember/${filename}`,
+                        src: `/asset/exmember/${filename.replace(/\\/g, '/')}`,
                         name: formatMemberName(filename),
                         containerId: 'image-pool'
                     }));
