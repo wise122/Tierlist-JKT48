@@ -294,10 +294,10 @@ const Droppable = ({id, children}) => {
     );
 };
 
-const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContextMenu, isSelected }) => {
+const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContextMenu, isSelected, isDragMode }) => {
     const style = {
         opacity: isSelected ? 0.5 : isDragging ? 0.3 : 1,
-        cursor: dragOverlay ? 'grabbing' : 'grab',
+        cursor: isDragMode ? (dragOverlay ? 'grabbing' : 'grab') : 'pointer',
         position: dragOverlay ? 'fixed' : 'relative',
         transform: dragOverlay ? 'scale(1.05)' : 'none',
         zIndex: dragOverlay ? 999 : 1,
@@ -308,7 +308,7 @@ const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContex
         <div
             className={`member-image ${isDragging ? 'dragging' : ''} ${dragOverlay ? 'overlay' : ''}`}
             style={style}
-            onClick={() => onImageClick && onImageClick(image)}
+            onClick={() => !isDragMode && onImageClick && onImageClick(image)}
             onContextMenu={(e) => onContextMenu && onContextMenu(e, image)}
         >
             <img src={image.src} alt={image.name} />
@@ -317,7 +317,7 @@ const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContex
     );
 };
 
-const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelected }) => {
+const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelected, isDragMode }) => {
     const {
         attributes,
         listeners,
@@ -335,27 +335,35 @@ const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelec
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        cursor: isDragMode ? 'grab' : 'pointer',
     };
+
+    // Only include drag-related props if in drag mode
+    const dragProps = isDragMode ? {
+        ...attributes,
+        ...listeners
+    } : {};
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
+            {...dragProps}
+            onClick={() => !isDragMode && onImageClick && onImageClick(image)}
         >
             <DraggableImage 
                 image={image} 
                 isDragging={isDragging} 
-                onImageClick={onImageClick}
+                onImageClick={isDragMode ? onImageClick : null}
                 onContextMenu={onContextMenu}
                 isSelected={isSelected}
+                isDragMode={isDragMode}
             />
         </div>
     );
 };
 
-const TierRow = ({ row, onMove, onEdit, onClear, onDelete, children }) => {
+const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow, children }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     
@@ -393,7 +401,14 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, children }) => {
     const textColor = getContrastColor(row.color);
 
     return (
-        <div className="row-header" style={{ backgroundColor: row.color }}>
+        <div 
+            className="row-header" 
+            style={{ 
+                backgroundColor: row.color,
+                borderTopLeftRadius: isFirstRow ? '8px' : '0',
+                borderTopRightRadius: '0'
+            }}
+        >
             <span style={{ color: textColor }}>{row.name}</span>
             <IconButton 
                 onClick={handleClick}
@@ -446,7 +461,8 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, children }) => {
 const Tierlist = () => {
     const navigate = useNavigate();
     const tierlistRef = useRef(null);
-    const tierRowsRef = useRef(null);
+    const titleInputRef = useRef(null);
+    const measureRef = useRef(null);
     const [rows, setRows] = useState(initialRows);
     const [images, setImages] = useState([]);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -457,6 +473,9 @@ const Tierlist = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [showWelcomeDialog, setShowWelcomeDialog] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [tierlistTitle, setTierlistTitle] = useState('');
+    const [titlePosition, setTitlePosition] = useState({ left: 0, width: 0 });
+    const [inputWidth, setInputWidth] = useState(300); // minimum width
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -533,15 +552,16 @@ const Tierlist = () => {
     }, []);
 
     const handleDragStart = (event) => {
+        if (!isDragMode) return;  // Add this line to prevent drag in click mode
         const { active } = event;
         setActiveId(active.id);
     };
 
     const handleDragOver = (event) => {
+        if (!isDragMode) return;  // Add this line to prevent drag in click mode
         const { active, over } = event;
-        
         if (!over) return;
-
+        
         const overId = over.id;
         
         // If we're over a droppable container
@@ -579,8 +599,8 @@ const Tierlist = () => {
     };
 
     const handleDragEnd = (event) => {
+        if (!isDragMode) return;  // Add this line to prevent drag in click mode
         const { active, over } = event;
-
         if (!over) {
             setActiveId(null);
             return;
@@ -770,81 +790,190 @@ const Tierlist = () => {
     };
 
     const handleSave = async () => {
-        if (!tierRowsRef.current) return;
+        if (!tierlistRef.current) return;
 
         try {
-            // Apply any necessary styles for better image quality
-            const node = tierRowsRef.current;
-            const originalBg = node.style.backgroundColor;
-            
-            // Set background color explicitly
-            document.body.style.backgroundColor = '#1a1a2e';
-            node.style.backgroundColor = '#1a1a2e';
+            // Get the dimensions from the original tier rows
+            const rowsContainer = tierlistRef.current.querySelector('.tier-rows-container');
+            if (!rowsContainer) return;
 
-            // Force a repaint
-            node.style.transform = 'translateZ(0)';
+            // Get the width of the actual content area (including the drop area)
+            const firstRow = rowsContainer.querySelector('.tier-row');
+            if (!firstRow) return;
+            const rowWidth = firstRow.offsetWidth;
+
+            // Create a temporary container for the title and tierlist
+            const tempContainer = document.createElement('div');
+            tempContainer.style.backgroundColor = '#1a1a2e';
+            tempContainer.style.padding = '10px 20px';  // Reduced padding
+            tempContainer.style.display = 'flex';
+            tempContainer.style.flexDirection = 'column';
+            tempContainer.style.alignItems = 'flex-start';
+
+            // Add the title if it exists
+            if (tierlistTitle) {
+                const titleContainer = document.createElement('div');
+                titleContainer.style.width = `${rowWidth}px`;
+                titleContainer.style.display = 'flex';
+                titleContainer.style.justifyContent = 'center';
+                titleContainer.style.marginBottom = '5px';
+                titleContainer.style.marginTop = '0';  // Removed top margin
+                titleContainer.style.padding = '0';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.style.color = 'white';
+                titleDiv.style.fontSize = '32px';
+                titleDiv.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+                titleDiv.style.whiteSpace = 'nowrap';
+                titleDiv.textContent = tierlistTitle;
+                titleDiv.style.textAlign = 'center';
+
+                titleContainer.appendChild(titleDiv);
+                tempContainer.appendChild(titleContainer);
+            }
+
+            // Clone and prepare the tierlist
+            const tierlistClone = rowsContainer.cloneNode(true);
             
+            // Remove any buttons and icons
+            const elementsToRemove = tierlistClone.querySelectorAll('button, .MuiSvgIcon-root, .tierlist-title-container');
+            elementsToRemove.forEach(el => el.remove());
+
+            // Set the width of the container and tierlist
+            tempContainer.style.width = `${rowWidth}px`;
+            tierlistClone.style.width = '100%';
+            tierlistClone.style.marginTop = '0';  // Ensure no extra margin at the top of the tierlist
+
+            // Make sure each row maintains its width
+            const rows = tierlistClone.querySelectorAll('.tier-row');
+            rows.forEach(row => {
+                row.style.width = '100%';
+                row.style.marginTop = '0';  // Ensure no margins between rows
+                // Make sure the droppable area takes full width
+                const droppable = row.querySelector('.droppable');
+                if (droppable) {
+                    droppable.style.width = '100%';
+                }
+                // Make sure the tier content area takes full width
+                const tierContent = row.querySelector('.tier-content');
+                if (tierContent) {
+                    tierContent.style.width = '100%';
+                }
+            });
+
+            // Add the tierlist to the container
+            tempContainer.appendChild(tierlistClone);
+            
+            // Add to document temporarily for rendering
+            document.body.appendChild(tempContainer);
+
             const options = {
                 quality: 1.0,
                 bgcolor: '#1a1a2e',
                 style: {
-                    'background-color': '#1a1a2e',
-                    'transform': 'translateZ(0)'
-                },
-                filter: (node) => {
-                    // Exclude any elements you don't want in the image
-                    return node.tagName !== 'BUTTON';
-                },
-                width: node.offsetWidth,
-                height: node.offsetHeight
+                    'background-color': '#1a1a2e'
+                }
             };
 
-            // Try toPng first, if it fails fall back to toBlob
             try {
-                const dataUrl = await domtoimage.toPng(node, options);
+                const dataUrl = await domtoimage.toPng(tempContainer, options);
                 const link = document.createElement('a');
                 link.download = 'jkt48-tierlist.png';
                 link.href = dataUrl;
-                document.body.appendChild(link);
                 link.click();
-                document.body.removeChild(link);
             } catch (pngError) {
                 console.warn('PNG generation failed, trying blob...', pngError);
-                const blob = await domtoimage.toBlob(node, options);
+                const blob = await domtoimage.toBlob(tempContainer, options);
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.download = 'jkt48-tierlist.png';
                 link.href = url;
-                document.body.appendChild(link);
                 link.click();
-                document.body.removeChild(link);
                 URL.revokeObjectURL(url);
             }
 
-            // Restore original styles
-            node.style.backgroundColor = originalBg;
-            node.style.transform = '';
-            document.body.style.backgroundColor = '';
+            // Clean up
+            document.body.removeChild(tempContainer);
         } catch (error) {
             console.error('Error saving tierlist:', error);
             alert('Failed to save image. Please try again or use a screenshot instead.');
         }
     };
 
+    // Update input width based on content
+    useEffect(() => {
+        const updateWidth = () => {
+            if (titleInputRef.current && tierlistRef.current) {
+                // Get the width of the first tier row for reference
+                const firstRow = tierlistRef.current.querySelector('.tier-row');
+                if (!firstRow) return;
+
+                const rowWidth = firstRow.offsetWidth;
+                
+                // Create a hidden span to measure text width
+                const span = document.createElement('span');
+                span.className = 'tierlist-title-measure';
+                span.style.font = window.getComputedStyle(titleInputRef.current).font;
+                span.textContent = tierlistTitle || titleInputRef.current.placeholder;
+                document.body.appendChild(span);
+                
+                // Calculate width with padding
+                const textWidth = span.offsetWidth;
+                const padding = 24; // 12px padding on each side
+                const newWidth = Math.min(Math.max(300, textWidth + padding), rowWidth); // between 300px and row width
+                
+                document.body.removeChild(span);
+                setInputWidth(newWidth);
+                
+                // Update position for header title
+                const rowRect = firstRow.getBoundingClientRect();
+                const viewportWidth = document.documentElement.clientWidth;
+                const rowCenterX = rowRect.left + (rowRect.width / 2);
+                const leftPosition = (rowCenterX / viewportWidth) * 100;
+
+                setTitlePosition({
+                    left: `${leftPosition}%`,
+                    transform: 'translateX(-50%)',
+                    width: newWidth
+                });
+            }
+        };
+
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, [tierlistTitle]);
+
     const handleImageClick = (image) => {
         if (!isDragMode) {
-            setSelectedImage(selectedImage?.id === image.id ? null : image);
+            // If clicking the same image that's selected, unselect it
+            if (selectedImage?.id === image.id) {
+                setSelectedImage(null);
+            } else {
+                // If clicking a different image, select it
+                setSelectedImage(image);
+            }
+            // Add a small delay to prevent accidental double-clicks
+            const currentTarget = image;
+            setTimeout(() => {
+                if (selectedImage?.id === currentTarget.id) {
+                    setSelectedImage(null);
+                }
+            }, 300);
         }
     };
 
     const handleImageRightClick = (e, image) => {
         e.preventDefault(); // Prevent the default context menu
-        if (!isDragMode && image.containerId !== 'image-pool') {
-            setImages(prev => prev.map(img => 
-                img.id === image.id 
-                    ? { ...img, containerId: 'image-pool' }
-                    : img
-            ));
+        if (!isDragMode) {
+            if (image.containerId !== 'image-pool') {
+                setImages(prev => prev.map(img => 
+                    img.id === image.id 
+                        ? { ...img, containerId: 'image-pool' }
+                        : img
+                ));
+            }
+            // Always clear selection when right-clicking
             setSelectedImage(null);
         }
     };
@@ -857,7 +986,8 @@ const Tierlist = () => {
                         ? { ...img, containerId: tierId }
                         : img
                 );
-                setSelectedImage(null);
+                // Clear selection after placing
+                setTimeout(() => setSelectedImage(null), 50);
                 return newImages;
             });
         }
@@ -873,13 +1003,25 @@ const Tierlist = () => {
                 >
                     <ArrowBack />
                 </IconButton>
-                <div 
-                    className="header-title-container"
-                    onClick={() => navigate('/')}
-                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                >
-                    <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" />
-                    <h1 className="header-title">JKT48 Tierlist</h1>
+                <div className="header-title-container">
+                    <div className="header-main" onClick={() => navigate('/')}>
+                        <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" />
+                        <div className="header-titles">
+                            <h1 className="header-title">JKT48 Tierlist</h1>
+                        </div>
+                    </div>
+                    {tierlistTitle && (
+                        <div 
+                            className="header-subtitle-container"
+                            style={{
+                                left: titlePosition.left,
+                                width: titlePosition.width,
+                                transform: titlePosition.transform
+                            }}
+                        >
+                            <h2 className="header-subtitle">{tierlistTitle}</h2>
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -932,17 +1074,40 @@ const Tierlist = () => {
             <DndContext
                 sensors={sensors}
                 collisionDetection={pointerWithin}
-                onDragStart={isDragMode ? handleDragStart : null}
-                onDragOver={isDragMode ? handleDragOver : null}
-                onDragEnd={isDragMode ? handleDragEnd : null}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
                 onDragCancel={() => setActiveId(null)}
             >
                 <div className="tierlist-container" ref={tierlistRef}>
-                    <div className="tier-rows-container" ref={tierRowsRef}>
-                        {rows.map((row) => (
+                    <div className="tier-rows-container" ref={measureRef}>
+                        <div className="tierlist-title-container" style={{ 
+                            marginTop: '0',
+                            marginBottom: '5px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            width: '100%'
+                        }}>
+                            <input
+                                ref={titleInputRef}
+                                type="text"
+                                className="tierlist-title"
+                                value={tierlistTitle}
+                                onChange={(e) => setTierlistTitle(e.target.value)}
+                                placeholder={`My ${tierlistType === 'setlist' ? 'Setlist' : 'Member'} Tierlist`}
+                                spellCheck="false"
+                                style={{ 
+                                    width: `${inputWidth}px`,
+                                    fontSize: '32px',
+                                    padding: '8px 12px'
+                                }}
+                                maxLength={90}
+                            />
+                        </div>
+                        {rows.map((row, index) => (
                             <div 
                                 key={row.id} 
-                                className="tier-row"
+                                className={`tier-row ${index === 0 ? 'first-tier-row' : ''}`}
                                 onClick={() => handleTierClick(row.id)}
                                 style={{ 
                                     cursor: (!isDragMode && selectedImage) ? 'pointer' : 'default',
@@ -955,6 +1120,7 @@ const Tierlist = () => {
                                     onEdit={handleRowEdit}
                                     onClear={handleRowClear}
                                     onDelete={handleRowDelete}
+                                    isFirstRow={index === 0}
                                 />
                                 <Droppable id={row.id}>
                                     <div className="tier-content">
@@ -970,6 +1136,7 @@ const Tierlist = () => {
                                                     onImageClick={handleImageClick}
                                                     onContextMenu={handleImageRightClick}
                                                     isSelected={selectedImage?.id === image.id}
+                                                    isDragMode={isDragMode}
                                                 />
                                             ))}
                                         </SortableContext>
@@ -1101,6 +1268,7 @@ const Tierlist = () => {
                                             onImageClick={handleImageClick}
                                             onContextMenu={handleImageRightClick}
                                             isSelected={selectedImage?.id === image.id}
+                                            isDragMode={isDragMode}
                                         />
                                     ))}
                                 </SortableContext>
@@ -1113,6 +1281,7 @@ const Tierlist = () => {
                             <DraggableImage 
                                 image={images.find(img => img.id === activeId)}
                                 dragOverlay
+                                isDragMode={isDragMode}
                             />
                         ) : null}
                     </DragOverlay>
