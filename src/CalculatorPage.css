@@ -1,0 +1,87 @@
+.calculator-page {
+    min-width: 1024px;
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a2e;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.calculator-container {
+    padding-top: 64px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background-color: #1a1a2e;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 1000;
+}
+
+.header-logo {
+    height: 40px;
+    margin-right: 12px;
+}
+
+.header-title {
+    color: white;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.content-container {
+    flex: 1;
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.calculator-card {
+    background-color: #2a2a3e;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 24px;
+}
+
+.form-container {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.wishlist-container {
+    background-color: #323342;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+.total-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: white;
+} 
