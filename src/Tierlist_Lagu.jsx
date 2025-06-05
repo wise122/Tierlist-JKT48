@@ -54,13 +54,10 @@ import {
     Search
 } from '@mui/icons-material';
 import domtoimage from 'dom-to-image-more';
+import { setlistSongs } from './data/setlistSongs';
 import './Tierlist.css';
 import './TierlistPage_Lagu.css';
 import logo from './assets/icon/TierlistIcon.png';
-import {
-    activeMemberFiles,
-    exMemberFiles
-} from './data/memberData';
 import {
     mvFiles,
     spvFiles
@@ -174,7 +171,7 @@ const Droppable = ({id, children}) => {
     );
 };
 
-const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContextMenu, isSelected, isDragMode }) => {
+const DraggableImage = ({ song, isDragging, dragOverlay, onImageClick, onContextMenu, isSelected, isDragMode }) => {
     const style = {
         opacity: isSelected ? 0.5 : isDragging ? 0.3 : 1,
         cursor: isDragMode ? (dragOverlay ? 'grabbing' : 'grab') : 'pointer',
@@ -184,15 +181,24 @@ const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContex
         border: isSelected ? '2px solid #4CAF50' : 'none'
     };
 
+    // Get the selected setlist from localStorage
+    const selectedSetlist = localStorage.getItem('selectedSetlist') || "Aturan Anti Cinta";
+    // Convert the setlist name to the image filename format
+    const imageFilename = selectedSetlist.replace(/ /g, '_');
+
     return (
         <div
-            className={`member-image ${isDragging ? 'dragging' : ''} ${dragOverlay ? 'overlay' : ''}`}
+            className={`song-image ${isDragging ? 'dragging' : ''} ${dragOverlay ? 'overlay' : ''}`}
             style={style}
-            onClick={() => !isDragMode && onImageClick && onImageClick(image)}
-            onContextMenu={(e) => onContextMenu && onContextMenu(e, image)}
+            onClick={() => !isDragMode && onImageClick && onImageClick(song)}
+            onContextMenu={(e) => onContextMenu && onContextMenu(e, song)}
         >
-            <img src={image.src} alt={image.name} />
-            <div className="member-name">{image.name}</div>
+            <img 
+                src={`/asset/Setlist/${imageFilename}.jpg`} 
+                alt={song.name} 
+                className="song-background"
+            />
+            <div className="song-name">{song.name}</div>
         </div>
     );
 };
@@ -232,7 +238,7 @@ const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelec
             onClick={() => !isDragMode && onImageClick && onImageClick(image)}
         >
             <DraggableImage 
-                image={image} 
+                song={image} 
                 isDragging={isDragging} 
                 onImageClick={isDragMode ? onImageClick : null}
                 onContextMenu={onContextMenu}
@@ -344,7 +350,7 @@ const Tierlist = () => {
     const titleInputRef = useRef(null);
     const measureRef = useRef(null);
     const [rows, setRows] = useState(initialRows);
-    const [images, setImages] = useState([]);
+    const [songs, setSongs] = useState([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingRow, setEditingRow] = useState({ name: '', color: '' });
     const [activeId, setActiveId] = useState(null);
@@ -356,6 +362,7 @@ const Tierlist = () => {
     const [tierlistTitle, setTierlistTitle] = useState('');
     const [titlePosition, setTitlePosition] = useState({ left: 0, width: 0 });
     const [inputWidth, setInputWidth] = useState(300); // minimum width
+    const [selectedSetlist, setSelectedSetlist] = useState('');
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -371,95 +378,19 @@ const Tierlist = () => {
     );
 
     useEffect(() => {
-        const tierlistType = localStorage.getItem('tierlistType') || 'member';
-        const memberType = localStorage.getItem('memberType') || 'active';
-        const generation = localStorage.getItem('generation') || 'all';
-        const videoType = localStorage.getItem('videoType') || 'all';
+        const setlistName = localStorage.getItem('selectedSetlist') || "Aturan Anti Cinta";
+        setSelectedSetlist(setlistName);
+        const songList = setlistSongs[setlistName];
         
-        setTierlistType(tierlistType);
-        console.log('Loading images with:', { tierlistType, memberType, generation, videoType });
-
-        let imageList = [];
-
-        if (tierlistType === 'setlist') {
-            imageList = setlistFiles.map((filename, index) => ({
-                id: `setlist-${filename}`,
-                src: `/asset/Setlist/${filename}`,
-                name: formatSetlistName(filename),
+        if (songList) {
+            const songs = songList.map((songName, index) => ({
+                id: `song-${index}`,
+                name: songName,
                 containerId: 'image-pool',
                 originalIndex: index
             }));
-        } else if (tierlistType === 'ramadan') {
-            imageList = ssRamadanFiles.map((filename, index) => ({
-                id: `ramadan-${filename}`,
-                src: `/asset/SSRamadan/${filename}`,
-                name: formatSetlistName(filename),
-                containerId: 'image-pool',
-                originalIndex: index
-            }));
-        } else if (tierlistType === 'video') {
-            let videoFiles = [];
-            if (videoType === 'all') {
-                videoFiles = [...spvFiles, ...mvFiles];
-            } else if (videoType === 'mv') {
-                videoFiles = mvFiles;
-            } else if (videoType === 'spv') {
-                videoFiles = spvFiles;
-            }
-            
-            imageList = videoFiles.map((filename, index) => ({
-                id: `video-${filename}`,
-                src: `/asset/SPV_MV/${filename}`,
-                name: formatVideoName(filename),
-                containerId: 'image-pool',
-                originalIndex: index
-            }));
-        } else {
-            // Helper function to check if a filename matches the generation
-            const matchesGeneration = (filename) => {
-                if (generation === 'all') return true;
-                if (generation === 'genv1') {
-                    const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                    return baseFilename.startsWith('JKT48V_Gen1_');
-                }
-                const prefix = `Gen${generation.slice(3)}_`;
-                const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                return baseFilename.startsWith(prefix);
-            };
-            
-            let currentIndex = 0;
-            
-            // Load active members if needed
-            if (memberType === 'active' || memberType === 'all') {
-                const activeMemberImages = activeMemberFiles
-                    .filter(filename => matchesGeneration(filename))
-                    .map((filename) => ({
-                        id: `member-${filename}`,
-                        src: `/asset/member_active/${filename}`,
-                        name: formatMemberName(filename),
-                        containerId: 'image-pool',
-                        originalIndex: currentIndex++
-                    }));
-                imageList = [...imageList, ...activeMemberImages];
-            }
-
-            // Load ex-members if needed
-            if (memberType === 'ex' || memberType === 'all') {
-                const exMembersList = exMemberFiles
-                    .filter(filename => matchesGeneration(filename))
-                    .map((filename) => ({
-                        id: `member-${filename}`,
-                        src: `/asset/exmember/${filename.replace(/\\/g, '/')}`,
-                        name: formatMemberName(filename),
-                        containerId: 'image-pool',
-                        originalIndex: currentIndex++
-                    }));
-                imageList = [...imageList, ...exMembersList];
-            }
+            setSongs(songs);
         }
-
-        console.log('Final image list:', imageList);
-        setImages(imageList);
     }, []);
 
     const handleDragStart = (event) => {
@@ -477,7 +408,7 @@ const Tierlist = () => {
         
         // If we're over a droppable container
         if (rows.find(row => row.id === overId) || overId === 'image-pool') {
-            setImages(prev => {
+            setSongs(prev => {
                 const activeImage = prev.find(img => img.id === active.id);
                 if (activeImage.containerId === overId) return prev; // No change if same container
                 
@@ -520,7 +451,7 @@ const Tierlist = () => {
         const overId = over.id;
         
         if (rows.find(row => row.id === overId) || overId === 'image-pool') {
-            setImages(prev => {
+            setSongs(prev => {
                 const activeImage = prev.find(img => img.id === active.id);
                 const overContainer = overId;
                 
@@ -551,11 +482,11 @@ const Tierlist = () => {
             });
         } else {
             // If dropping onto another image, swap positions
-            const activeIndex = images.findIndex(img => img.id === active.id);
-            const overIndex = images.findIndex(img => img.id === over.id);
+            const activeIndex = songs.findIndex(img => img.id === active.id);
+            const overIndex = songs.findIndex(img => img.id === over.id);
             
             if (activeIndex !== -1 && overIndex !== -1) {
-                setImages(prev => {
+                setSongs(prev => {
                     const activeImage = prev[activeIndex];
                     const overImage = prev[overIndex];
                     
@@ -595,18 +526,18 @@ const Tierlist = () => {
     };
 
     const handleRowClear = (rowId) => {
-        setImages(prevImages => 
-            prevImages.map(img => 
-                img.containerId === rowId 
-                    ? { ...img, containerId: 'image-pool' }
-                    : img
+        setSongs(prevSongs => 
+            prevSongs.map(song => 
+                song.containerId === rowId 
+                    ? { ...song, containerId: 'image-pool' }
+                    : song
             )
         );
     };
 
     const handleRowDelete = (rowId) => {
         // Move all images from the row to the image pool
-        setImages(prevImages => 
+        setSongs(prevImages => 
             prevImages.map(img => 
                 img.containerId === rowId 
                     ? { ...img, containerId: 'image-pool' }
@@ -627,7 +558,7 @@ const Tierlist = () => {
     };
 
     const getImagesForContainer = (containerId) => {
-        const filteredImages = images.filter(img => {
+        const filteredImages = songs.filter(img => {
             const matchesContainer = img.containerId === containerId;
             const matchesSearch = containerId === 'image-pool' 
                 ? img.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -641,98 +572,26 @@ const Tierlist = () => {
         return filteredImages;
     };
 
-    const activeImage = activeId ? images.find(img => img.id === activeId) : null;
+    const activeImage = activeId ? songs.find(img => img.id === activeId) : null;
 
     const handleReset = () => {
         // Reset rows to initial state
         setRows([...initialRows]);
 
-        // Reset images to initial state
-        const tierlistType = localStorage.getItem('tierlistType') || 'member';
-        const memberType = localStorage.getItem('memberType') || 'active';
-        const generation = localStorage.getItem('generation') || 'all';
-        const videoType = localStorage.getItem('videoType') || 'all';
-
-        let imageList = [];
-
-        if (tierlistType === 'setlist') {
-            imageList = setlistFiles.map((filename, index) => ({
-                id: `setlist-${filename}`,
-                src: `/asset/Setlist/${filename}`,
-                name: formatSetlistName(filename),
+        // Reset songs to initial state
+        const setlistName = localStorage.getItem('selectedSetlist') || "Aturan Anti Cinta";
+        setSelectedSetlist(setlistName);
+        const songList = setlistSongs[setlistName];
+        
+        if (songList) {
+            const songs = songList.map((songName, index) => ({
+                id: `song-${index}`,
+                name: songName,
                 containerId: 'image-pool',
                 originalIndex: index
             }));
-        } else if (tierlistType === 'ramadan') {
-            imageList = ssRamadanFiles.map((filename, index) => ({
-                id: `ramadan-${filename}`,
-                src: `/asset/SSRamadan/${filename}`,
-                name: formatSetlistName(filename),
-                containerId: 'image-pool',
-                originalIndex: index
-            }));
-        } else if (tierlistType === 'video') {
-            let videoFiles = [];
-            if (videoType === 'all') {
-                videoFiles = [...spvFiles, ...mvFiles];
-            } else if (videoType === 'mv') {
-                videoFiles = mvFiles;
-            } else if (videoType === 'spv') {
-                videoFiles = spvFiles;
-            }
-            
-            imageList = videoFiles.map((filename, index) => ({
-                id: `video-${filename}`,
-                src: `/asset/SPV_MV/${filename}`,
-                name: formatVideoName(filename),
-                containerId: 'image-pool',
-                originalIndex: index
-            }));
-        } else {
-            // Helper function to check if a filename matches the generation
-            const matchesGeneration = (filename) => {
-                if (generation === 'all') return true;
-                if (generation === 'genv1') {
-                    const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                    return baseFilename.startsWith('JKT48V_Gen1_');
-                }
-                const prefix = `Gen${generation.slice(3)}_`;
-                const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                return baseFilename.startsWith(prefix);
-            };
-            
-            let currentIndex = 0;
-            
-            // Load active members if needed
-            if (memberType === 'active' || memberType === 'all') {
-                const activeMemberImages = activeMemberFiles
-                    .filter(filename => matchesGeneration(filename))
-                    .map((filename) => ({
-                        id: `member-${filename}`,
-                        src: `/asset/member_active/${filename}`,
-                        name: formatMemberName(filename),
-                        containerId: 'image-pool',
-                        originalIndex: currentIndex++
-                    }));
-                imageList = [...imageList, ...activeMemberImages];
-            }
-
-            // Load ex-members if needed
-            if (memberType === 'ex' || memberType === 'all') {
-                const exMembersList = exMemberFiles
-                    .filter(filename => matchesGeneration(filename))
-                    .map((filename) => ({
-                        id: `member-${filename}`,
-                        src: `/asset/exmember/${filename.replace(/\\/g, '/')}`,
-                        name: formatMemberName(filename),
-                        containerId: 'image-pool',
-                        originalIndex: currentIndex++
-                    }));
-                imageList = [...imageList, ...exMembersList];
-            }
+            setSongs(songs);
         }
-
-        setImages(imageList);
     };
 
     const handleSave = async () => {
@@ -913,7 +772,7 @@ const Tierlist = () => {
         e.preventDefault(); // Prevent the default context menu
         if (!isDragMode) {
             if (image.containerId !== 'image-pool') {
-                setImages(prev => prev.map(img => 
+                setSongs(prev => prev.map(img => 
                     img.id === image.id 
                         ? { ...img, containerId: 'image-pool' }
                         : img
@@ -926,7 +785,7 @@ const Tierlist = () => {
 
     const handleTierClick = (tierId) => {
         if (!isDragMode && selectedImage) {
-            setImages(prev => {
+            setSongs(prev => {
                 const newImages = prev.map(img => 
                     img.id === selectedImage.id 
                         ? { ...img, containerId: tierId }
@@ -1056,7 +915,7 @@ const Tierlist = () => {
                                 className="tierlist-title"
                                 value={tierlistTitle}
                                 onChange={(e) => setTierlistTitle(e.target.value)}
-                                placeholder={`My ${getTierlistTypeDisplay()} Tierlist`}
+                                placeholder={`My ${selectedSetlist} Tierlist`}
                                 spellCheck="false"
                                 style={{ 
                                     width: `${inputWidth}px`,
@@ -1163,7 +1022,7 @@ const Tierlist = () => {
                     <div className="image-pool-container">
                         <div className="image-pool-header">
                             <h2>
-                                Available {getTierlistTypeDisplay()}s ({getImagesForContainer('image-pool').length})
+                                {selectedSetlist} Songs ({getImagesForContainer('image-pool').length})
                                 {!isDragMode && selectedImage && (
                                     <span style={{ fontSize: '0.8em', marginLeft: '10px', color: '#4CAF50' }}>
                                         Selected: {selectedImage.name}
@@ -1205,7 +1064,7 @@ const Tierlist = () => {
                                             display: 'none',
                                         }
                                     }}
-                                    placeholder={`Search ${tierlistType === 'setlist' ? 'setlists' : 'members'}...`}
+                                    placeholder="Search songs..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     variant="standard"
@@ -1241,7 +1100,7 @@ const Tierlist = () => {
                     <DragOverlay>
                         {activeId && isDragMode ? (
                             <DraggableImage 
-                                image={images.find(img => img.id === activeId)}
+                                song={songs.find(img => img.id === activeId)}
                                 dragOverlay
                                 isDragMode={isDragMode}
                             />
