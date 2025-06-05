@@ -65,10 +65,8 @@ import {
     mvFiles,
     spvFiles
 } from './data/spv_mv';
-import {
-    setlistFiles,
-    ssRamadanFiles
-} from './data/specialshowData';
+import { setlistFiles } from './data/SetlistData';
+import { ssRamadanFiles } from './data/specialshowData';
 
 const TIER_COLORS = [
     { name: 'Red', value: '#FF7F7F' },
@@ -960,7 +958,7 @@ const Tierlist = () => {
             <header className="header">
                 <IconButton 
                     className="back-button"
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate(-1)}
                     size="large"
                 >
                     <ArrowBack />

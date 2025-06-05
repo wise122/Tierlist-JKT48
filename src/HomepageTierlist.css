@@ -50,6 +50,8 @@
     border-radius: 5px;
     border: 1px solid #ccc;
     font-size: 16px;
+    background-color: white;
+    color: #333;
 }
 
 .member-dropdowns-container {
@@ -116,53 +118,4 @@
 .start-button:hover:not(:disabled) {
     background-color: #a11b13;
     transform: scale(1.02);
-}
-
-.nav-buttons-container {
-    display: flex;
-    gap: 2rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: 1rem;
-    width: 100%;
-    max-width: 400px;
-}
-
-.nav-button {
-    padding: 15px 20px;
-    font-size: 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #be2016;
-    color: white;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.nav-button:hover {
-    background-color: #a11b13;
-    transform: scale(1.02);
-}
-
-.nav-button:active {
-    transform: scale(1);
-}
-
-@media (max-width: 600px) {
-    .title {
-        font-size: 2rem;
-    }
-
-    .nav-buttons-container {
-        gap: 1rem;
-        padding: 0.5rem;
-    }
 }
