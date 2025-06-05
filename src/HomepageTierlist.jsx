@@ -74,6 +74,25 @@ const Homepage = () => {
 
     return (
         <div className="homepage-container">
+            <button 
+                onClick={() => navigate('/')}
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    backgroundColor: '#be2016',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                    transition: 'all 0.3s ease'
+                }}
+            >
+                Back to Homepage
+            </button>
             {showPopup && (
                 <div className="popup-message">
                     {!tierlistType ? "Please select a tierlist type first!" : "Please select a setlist first!"}
