@@ -6,7 +6,6 @@
     justify-content: center;
     background-color: white;
     padding: 20px;
-    box-sizing: border-box;
 }
 
 .app-logo {
@@ -165,14 +164,5 @@
     .nav-buttons-container {
         gap: 1rem;
         padding: 0.5rem;
-    }
-
-    .app-logo {
-        width: 180px;
-        height: 180px;
-    }
-
-    .dropdown-container {
-        padding: 0 10px;
     }
 }
