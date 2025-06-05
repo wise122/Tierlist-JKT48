@@ -391,8 +391,8 @@ const Calculator = () => {
                         className="header-logo"
                     />
                     <Typography variant="h6" className="header-title">
-                        JKT48 Wishlist Calculator
-                    </Typography>
+                JKT48 Wishlist Calculator
+            </Typography>
                 </header>
 
                 {/* Main Content */}
@@ -404,19 +404,19 @@ const Calculator = () => {
                                     fullWidth 
                                     size="small"
                                 >
-                                    <InputLabel>Select Category</InputLabel>
-                                    <Select
-                                        value={selectedCategory}
-                                        label="Select Category"
+                            <InputLabel>Select Category</InputLabel>
+                            <Select
+                                value={selectedCategory}
+                                label="Select Category"
                                         onChange={handleCategoryChange}
                                     >
                                         {categories.map((category) => (
                                             <MenuItem key={category.name} value={category.name}>
                                                 {category.name} {!isUserDefinedPrice(category.name) && `- ${formatPrice(category.price)}`}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
 
                                 {selectedCategory && isUserDefinedPrice(selectedCategory) && (
                                     <TextField
@@ -430,12 +430,12 @@ const Calculator = () => {
                                             inputProps: { min: 0 }
                                         }}
                                     />
-                                )}
+                        )}
 
-                                <Button
-                                    variant="contained"
-                                    startIcon={<AddIcon />}
-                                    onClick={handleAddItem}
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={handleAddItem}
                                     disabled={!selectedCategory || (isUserDefinedPrice(selectedCategory) && !customPrice)}
                                     sx={{
                                         bgcolor: '#be2016',
@@ -443,15 +443,15 @@ const Calculator = () => {
                                             bgcolor: '#a11b13'
                                         }
                                     }}
-                                >
-                                    Add
-                                </Button>
+                        >
+                            Add
+                        </Button>
                             </div>
 
                             <div className="wishlist-container" ref={wishlistRef}>
-                                <List>
-                                    {wishlist.map((item, index) => (
-                                        <React.Fragment key={item.id}>
+                        <List>
+                            {wishlist.map((item, index) => (
+                                <React.Fragment key={item.id}>
                                             <ListItem
                                                 sx={{
                                                     flexDirection: 'column',
@@ -490,14 +490,14 @@ const Calculator = () => {
                                                             sx={{ width: '80px' }}
                                                             size="small"
                                                         />
-                                                        <IconButton
-                                                            edge="end"
-                                                            aria-label="delete"
-                                                            onClick={() => handleRemoveItem(item.id)}
+                                            <IconButton
+                                                edge="end"
+                                                aria-label="delete"
+                                                onClick={() => handleRemoveItem(item.id)}
                                                             sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                                                        >
-                                                            <DeleteIcon />
-                                                        </IconButton>
+                                            >
+                                                <DeleteIcon />
+                                            </IconButton>
                                                     </Box>
                                                 </Box>
                                                 <TextField
@@ -510,13 +510,13 @@ const Calculator = () => {
                                                     variant="outlined"
                                                     size="small"
                                                 />
-                                            </ListItem>
+                                    </ListItem>
                                             {index < wishlist.length - 1 && (
                                                 <Divider sx={{ bgcolor: 'rgba(255, 255, 255, 0.12)' }} />
                                             )}
-                                        </React.Fragment>
-                                    ))}
-                                </List>
+                                </React.Fragment>
+                            ))}
+                        </List>
                             </div>
 
                             <div className="button-container">
@@ -548,8 +548,8 @@ const Calculator = () => {
                                     </Button>
                                 </div>
                                 <Typography className="total-text">
-                                    Total: {formatPrice(calculateTotal())}
-                                </Typography>
+                            Total: {formatPrice(calculateTotal())}
+                        </Typography>
                             </div>
                         </div>
                     </div>
