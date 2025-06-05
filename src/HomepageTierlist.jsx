@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Homepage.css';
 import logo from './assets/icon/TierlistIcon.png';
@@ -12,6 +12,19 @@ const Homepage = () => {
     const [selectedSetlist, setSelectedSetlist] = useState('');
     const [showPopup, setShowPopup] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Reset viewport meta tag
+        const viewport = document.querySelector('meta[name=viewport]');
+        if (viewport) {
+            viewport.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1';
+        } else {
+            const meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1';
+            document.head.appendChild(meta);
+        }
+    }, []);
 
     const handleTierlistTypeChange = (event) => {
         setTierlistType(event.target.value);

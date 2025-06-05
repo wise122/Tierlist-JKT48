@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Homepage.css';
 import logo from '/asset/icon/HomepageLogo.png';
 
 const Homepage = () => {
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Reset viewport meta tag
+        const viewport = document.querySelector('meta[name=viewport]');
+        if (viewport) {
+            viewport.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1';
+        } else {
+            const meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1';
+            document.head.appendChild(meta);
+        }
+    }, []);
 
     return (
         <div className="homepage-container">

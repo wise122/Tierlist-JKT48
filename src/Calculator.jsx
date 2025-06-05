@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CalculatorPage.css';
 import {
@@ -97,36 +97,6 @@ const Calculator = () => {
     const [showWelcomeDialog, setShowWelcomeDialog] = useState(true);
     const categories = getAllCategories();
 
-    // Update width and zoom for mobile devices
-    useEffect(() => {
-        const updateWidth = () => {
-            const isMobile = window.innerWidth < 1024;
-            if (isMobile) {
-                const zoom = (window.innerWidth / 1024);
-                // Apply zoom to the calculator page container instead of body
-                const container = document.querySelector('.calculator-page');
-                if (container) {
-                    container.style.transform = `scale(${zoom})`;
-                    // Adjust the height to account for the scaling
-                    document.body.style.minHeight = `${Math.ceil(window.innerHeight / zoom)}px`;
-                }
-            } else {
-                const container = document.querySelector('.calculator-page');
-                if (container) {
-                    container.style.transform = 'none';
-                }
-                document.body.style.minHeight = 'auto';
-            }
-        };
-
-        // Initial update
-        updateWidth();
-
-        // Update on resize
-        window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
-    }, []);
-
     const handleCategoryChange = (event) => {
         const category = event.target.value;
         setSelectedCategory(category);
@@ -155,8 +125,8 @@ const Calculator = () => {
         if (!categoryInfo) return;
 
         const newItem = {
-                id: Date.now(),
-                category: selectedCategory,
+            id: Date.now(),
+            category: selectedCategory,
             price: isUserDefinedPrice(selectedCategory) ? parseInt(customPrice) || 0 : categoryInfo.price,
             quantity: 1,
             description: '',
@@ -307,7 +277,7 @@ const Calculator = () => {
 
     return (
         <ThemeProvider theme={darkTheme}>
-            <div className="calculator-page">
+            <Box sx={{ bgcolor: '#323342', minHeight: '100vh' }}>
                 {/* Welcome Dialog */}
                 <Dialog
                     open={showWelcomeDialog}
@@ -319,17 +289,6 @@ const Calculator = () => {
                             maxWidth: '600px'
                         }
                     }}
-                    sx={{
-                        '& .MuiDialog-container': {
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0
-                        },
-                        position: 'fixed'
-                    }}
-                    keepMounted
                 >
                     <DialogTitle sx={{ 
                         borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
@@ -375,186 +334,208 @@ const Calculator = () => {
                     </DialogActions>
                 </Dialog>
 
-                {/* Header */}
-                <header className="header">
-                    <IconButton
-                        edge="start"
-                        color="inherit"
-                        onClick={() => navigate('/')}
-                        sx={{ mr: 2 }}
-                    >
-                        <ArrowBackIcon />
-                    </IconButton>
-                    <img 
-                        src={calculatorLogo} 
-                        alt="Calculator Logo" 
-                        className="header-logo"
-                    />
-                    <Typography variant="h6" className="header-title">
-                JKT48 Wishlist Calculator
-            </Typography>
-                </header>
+                {/* Fixed Header */}
+                <AppBar position="fixed" sx={{ bgcolor: '#323342', borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}>
+                    <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
+                        <IconButton
+                            edge="start"
+                            color="inherit"
+                            onClick={() => navigate('/')}
+                            sx={{ mr: 2 }}
+                        >
+                            <ArrowBackIcon />
+                        </IconButton>
+                        <img 
+                            src={calculatorLogo} 
+                            alt="Calculator Logo" 
+                            style={{ 
+                                height: '40px',
+                                marginRight: '12px'
+                            }} 
+                        />
+                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                            JKT48 Wishlist Calculator
+                        </Typography>
+                    </Toolbar>
+                </AppBar>
 
                 {/* Main Content */}
-                <div className="calculator-container">
-                    <div className="content-container">
-                        <div className="calculator-card">
-                            <div className="form-container">
-                                <FormControl 
-                                    fullWidth 
-                                    size="small"
-                                >
-                            <InputLabel>Select Category</InputLabel>
-                            <Select
-                                value={selectedCategory}
-                                label="Select Category"
-                                        onChange={handleCategoryChange}
+                <Box sx={{ pt: '64px' }}>
+                    <Container maxWidth="md" sx={{ py: 4 }}>
+                        <Card sx={{ bgcolor: '#323342', boxShadow: 'none' }}>
+                            <CardContent>
+                                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Select Category</InputLabel>
+                                        <Select
+                                            value={selectedCategory}
+                                            label="Select Category"
+                                            onChange={handleCategoryChange}
+                                        >
+                                            {categories.map((category) => (
+                                                <MenuItem key={category.name} value={category.name}>
+                                                    {category.name} {!isUserDefinedPrice(category.name) && `- ${formatPrice(category.price)}`}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+
+                                    {selectedCategory && isUserDefinedPrice(selectedCategory) && (
+                                        <TextField
+                                            label="Price"
+                                            type="number"
+                                            value={customPrice}
+                                            onChange={(e) => setCustomPrice(e.target.value)}
+                                            size="small"
+                                            sx={{ width: '200px' }}
+                                            InputProps={{
+                                                inputProps: { min: 0 }
+                                            }}
+                                        />
+                                    )}
+
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<AddIcon />}
+                                        onClick={handleAddItem}
+                                        disabled={!selectedCategory || (isUserDefinedPrice(selectedCategory) && !customPrice)}
                                     >
-                                        {categories.map((category) => (
-                                            <MenuItem key={category.name} value={category.name}>
-                                                {category.name} {!isUserDefinedPrice(category.name) && `- ${formatPrice(category.price)}`}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                                        Add
+                                    </Button>
+                                </Box>
 
-                                {selectedCategory && isUserDefinedPrice(selectedCategory) && (
-                                    <TextField
-                                        label="Price"
-                                        type="number"
-                                        value={customPrice}
-                                        onChange={(e) => setCustomPrice(e.target.value)}
-                                        size="small"
-                                        sx={{ width: '200px' }}
-                                        InputProps={{
-                                            inputProps: { min: 0 }
-                                        }}
-                                    />
-                        )}
-
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={handleAddItem}
-                                    disabled={!selectedCategory || (isUserDefinedPrice(selectedCategory) && !customPrice)}
-                                    sx={{
-                                        bgcolor: '#be2016',
-                                        '&:hover': {
-                                            bgcolor: '#a11b13'
-                                        }
-                                    }}
-                        >
-                            Add
-                        </Button>
-                            </div>
-
-                            <div className="wishlist-container" ref={wishlistRef}>
-                        <List>
-                            {wishlist.map((item, index) => (
-                                <React.Fragment key={item.id}>
-                                            <ListItem
-                                                sx={{
-                                                    flexDirection: 'column',
-                                                    alignItems: 'stretch',
-                                                    gap: 1,
-                                                    py: 2
-                                                }}
-                                            >
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Box>
-                                                        <Typography variant="subtitle1" sx={{ color: 'white' }}>
-                                                            {item.category}
-                                                        </Typography>
-                                                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                                                            {formatPrice(item.price)} × {item.quantity} = {formatPrice(item.price * item.quantity)}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                        {isUserDefinedPrice(item.category) && (
+                                <Paper 
+                                    ref={wishlistRef}
+                                    sx={{ bgcolor: '#323342', border: '1px solid rgba(255, 255, 255, 0.12)' }}
+                                >
+                                    <List>
+                                        {wishlist.map((item, index) => (
+                                            <React.Fragment key={item.id}>
+                                                <ListItem
+                                                    sx={{
+                                                        flexDirection: 'column',
+                                                        alignItems: 'stretch',
+                                                        gap: 1,
+                                                        py: 2
+                                                    }}
+                                                >
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <Box>
+                                                            <Typography variant="subtitle1" sx={{ color: 'white' }}>
+                                                                {item.category}
+                                                            </Typography>
+                                                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                                                                {formatPrice(item.price)} × {item.quantity} = {formatPrice(item.price * item.quantity)}
+                                                            </Typography>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                            {isUserDefinedPrice(item.category) && (
+                                                                <TextField
+                                                                    label="Price"
+                                                                    type="number"
+                                                                    value={item.price}
+                                                                    onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                                                                    InputProps={{ inputProps: { min: 0 } }}
+                                                                    sx={{ width: '120px' }}
+                                                                    size="small"
+                                                                />
+                                                            )}
                                                             <TextField
-                                                                label="Price"
+                                                                label="Qty"
                                                                 type="number"
-                                                                value={item.price}
-                                                                onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                                                                InputProps={{ inputProps: { min: 0 } }}
-                                                                sx={{ width: '120px' }}
+                                                                value={item.quantity}
+                                                                onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                                                                InputProps={{ inputProps: { min: 1 } }}
+                                                                sx={{ width: '80px' }}
                                                                 size="small"
                                                             />
-                                                        )}
-                                                        <TextField
-                                                            label="Qty"
-                                                            type="number"
-                                                            value={item.quantity}
-                                                            onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                                                            InputProps={{ inputProps: { min: 1 } }}
-                                                            sx={{ width: '80px' }}
-                                                            size="small"
-                                                        />
-                                            <IconButton
-                                                edge="end"
-                                                aria-label="delete"
-                                                onClick={() => handleRemoveItem(item.id)}
-                                                            sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                                            >
-                                                <DeleteIcon />
-                                            </IconButton>
+                                                            <IconButton
+                                                                edge="end"
+                                                                aria-label="delete"
+                                                                onClick={() => handleRemoveItem(item.id)}
+                                                                sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                                                            >
+                                                                <DeleteIcon />
+                                                            </IconButton>
+                                                        </Box>
                                                     </Box>
-                                                </Box>
-                                                <TextField
-                                                    fullWidth
-                                                    label="Description (optional)"
-                                                    value={item.description}
-                                                    onChange={(e) => handleDescriptionChange(item.id, e.target.value)}
-                                                    multiline
-                                                    rows={1}
-                                                    variant="outlined"
-                                                    size="small"
-                                                />
-                                    </ListItem>
-                                            {index < wishlist.length - 1 && (
-                                                <Divider sx={{ bgcolor: 'rgba(255, 255, 255, 0.12)' }} />
-                                            )}
-                                </React.Fragment>
-                            ))}
-                        </List>
-                            </div>
+                                                    <TextField
+                                                        fullWidth
+                                                        label="Description (optional)"
+                                                        value={item.description}
+                                                        onChange={(e) => handleDescriptionChange(item.id, e.target.value)}
+                                                        multiline
+                                                        rows={1}
+                                                        variant="outlined"
+                                                        size="small"
+                                                    />
+                                                </ListItem>
+                                                {index < wishlist.length - 1 && <Divider sx={{ bgcolor: 'rgba(255, 255, 255, 0.12)' }} />}
+                                            </React.Fragment>
+                                        ))}
+                                    </List>
+                                </Paper>
 
-                            <div className="button-container">
-                                <div className="action-buttons">
-                                    <Button
-                                        variant="outlined"
-                                        startIcon={<SaveIcon />}
-                                        onClick={handleSaveImage}
-                                        disabled={wishlist.length === 0}
-                                    >
-                                        Save as Image
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        startIcon={<SaveIcon />}
-                                        onClick={handleExportToExcel}
-                                        disabled={wishlist.length === 0}
-                                    >
-                                        Export to Excel
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        startIcon={<DeleteIcon />}
-                                        onClick={handleReset}
-                                        disabled={wishlist.length === 0}
-                                    >
-                                        Reset
-                                    </Button>
-                                </div>
-                                <Typography className="total-text">
-                            Total: {formatPrice(calculateTotal())}
-                        </Typography>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<SaveIcon />}
+                                            onClick={handleSaveImage}
+                                            disabled={wishlist.length === 0}
+                                            sx={{
+                                                color: 'white',
+                                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                                '&:hover': {
+                                                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+                                                }
+                                            }}
+                                        >
+                                            Save as Image
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<SaveIcon />}
+                                            onClick={handleExportToExcel}
+                                            disabled={wishlist.length === 0}
+                                            sx={{
+                                                color: 'white',
+                                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                                '&:hover': {
+                                                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+                                                }
+                                            }}
+                                        >
+                                            Export to Excel
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="error"
+                                            startIcon={<DeleteIcon />}
+                                            onClick={handleReset}
+                                            disabled={wishlist.length === 0}
+                                            sx={{
+                                                borderColor: 'rgba(255, 255, 255, 0.23)',
+                                                '&:hover': {
+                                                    borderColor: '#f44336',
+                                                    backgroundColor: 'rgba(244, 67, 54, 0.08)'
+                                                }
+                                            }}
+                                        >
+                                            Reset
+                                        </Button>
+                                    </Box>
+                                    <Typography variant="h6" sx={{ color: 'white' }}>
+                                        Total: {formatPrice(calculateTotal())}
+                                    </Typography>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Container>
+                </Box>
+            </Box>
         </ThemeProvider>
     );
 };

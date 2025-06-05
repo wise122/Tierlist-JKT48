@@ -703,31 +703,6 @@ const Tierlist = () => {
         }
     };
 
-    // Update width and zoom for mobile devices
-    useEffect(() => {
-        const updateWidth = () => {
-            const isMobile = window.innerWidth < 1024;
-            if (isMobile) {
-                // Force desktop view on mobile by setting zoom
-                const zoom = (window.innerWidth / 1024);
-                document.body.style.zoom = zoom;
-                // For browsers that don't support zoom
-                document.body.style.transform = `scale(${zoom})`;
-                document.body.style.transformOrigin = 'top left';
-            } else {
-                document.body.style.zoom = 1;
-                document.body.style.transform = 'none';
-            }
-        };
-
-        // Initial update
-        updateWidth();
-
-        // Update on resize
-        window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
-    }, []);
-
     // Update input width based on content
     useEffect(() => {
         const updateWidth = () => {
@@ -771,6 +746,48 @@ const Tierlist = () => {
         window.addEventListener('resize', updateWidth);
         return () => window.removeEventListener('resize', updateWidth);
     }, [tierlistTitle]);
+
+    // Add useEffect for mobile zoom
+    useEffect(() => {
+        const updateWidth = () => {
+            const isMobile = window.innerWidth < 1024;
+            if (isMobile) {
+                const scale = window.innerWidth / 1024;
+                const viewport = document.querySelector('meta[name=viewport]');
+                if (viewport) {
+                    viewport.content = `width=1024, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale=${scale}, user-scalable=no`;
+                } else {
+                    const meta = document.createElement('meta');
+                    meta.name = 'viewport';
+                    meta.content = `width=1024, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale=${scale}, user-scalable=no`;
+                    document.head.appendChild(meta);
+                }
+            } else {
+                const viewport = document.querySelector('meta[name=viewport]');
+                if (viewport) {
+                    viewport.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1';
+                }
+            }
+        };
+
+        // Initial update
+        updateWidth();
+
+        // Update on resize
+        window.addEventListener('resize', updateWidth);
+        window.addEventListener('orientationchange', updateWidth);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('resize', updateWidth);
+            window.removeEventListener('orientationchange', updateWidth);
+            // Reset viewport on unmount
+            const viewport = document.querySelector('meta[name=viewport]');
+            if (viewport) {
+                viewport.content = 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1';
+            }
+        };
+    }, []);
 
     const handleImageClick = (image) => {
         if (!isDragMode) {
