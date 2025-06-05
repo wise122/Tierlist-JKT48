@@ -477,12 +477,13 @@ const Calculator = () => {
                                 </Paper>
 
                                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <Box className="button-container">
                                         <Button
                                             variant="outlined"
                                             startIcon={<SaveIcon />}
                                             onClick={handleSaveImage}
                                             disabled={wishlist.length === 0}
+                                            className="action-button"
                                             sx={{
                                                 color: 'white',
                                                 borderColor: 'rgba(255, 255, 255, 0.23)',
@@ -499,6 +500,7 @@ const Calculator = () => {
                                             startIcon={<SaveIcon />}
                                             onClick={handleExportToExcel}
                                             disabled={wishlist.length === 0}
+                                            className="action-button"
                                             sx={{
                                                 color: 'white',
                                                 borderColor: 'rgba(255, 255, 255, 0.23)',
@@ -516,6 +518,7 @@ const Calculator = () => {
                                             startIcon={<DeleteIcon />}
                                             onClick={handleReset}
                                             disabled={wishlist.length === 0}
+                                            className="action-button"
                                             sx={{
                                                 borderColor: 'rgba(255, 255, 255, 0.23)',
                                                 '&:hover': {
@@ -527,7 +530,7 @@ const Calculator = () => {
                                             Reset
                                         </Button>
                                     </Box>
-                                    <Typography variant="h6" sx={{ color: 'white' }}>
+                                    <Typography variant="h6" className="total-amount" sx={{ color: 'white' }}>
                                         Total: {formatPrice(calculateTotal())}
                                     </Typography>
                                 </Box>
