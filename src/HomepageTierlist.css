@@ -6,6 +6,7 @@
     justify-content: center;
     background-color: white;
     padding: 20px;
+    box-sizing: border-box;
 }
 
 .app-logo {
@@ -118,4 +119,23 @@
 .start-button:hover:not(:disabled) {
     background-color: #a11b13;
     transform: scale(1.02);
+}
+
+@media (max-width: 600px) {
+    .title {
+        font-size: 2rem;
+    }
+
+    .app-logo {
+        width: 180px;
+        height: 180px;
+    }
+
+    .dropdown-container {
+        padding: 0 10px;
+    }
+
+    .member-dropdown {
+        font-size: 14px;
+    }
 }
