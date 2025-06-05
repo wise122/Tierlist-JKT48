@@ -703,6 +703,31 @@ const Tierlist = () => {
         }
     };
 
+    // Update width and zoom for mobile devices
+    useEffect(() => {
+        const updateWidth = () => {
+            const isMobile = window.innerWidth < 1024;
+            if (isMobile) {
+                // Force desktop view on mobile by setting zoom
+                const zoom = (window.innerWidth / 1024);
+                document.body.style.zoom = zoom;
+                // For browsers that don't support zoom
+                document.body.style.transform = `scale(${zoom})`;
+                document.body.style.transformOrigin = 'top left';
+            } else {
+                document.body.style.zoom = 1;
+                document.body.style.transform = 'none';
+            }
+        };
+
+        // Initial update
+        updateWidth();
+
+        // Update on resize
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
+
     // Update input width based on content
     useEffect(() => {
         const updateWidth = () => {
