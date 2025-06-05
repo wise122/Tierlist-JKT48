@@ -102,15 +102,20 @@ const Calculator = () => {
         const updateWidth = () => {
             const isMobile = window.innerWidth < 1024;
             if (isMobile) {
-                // Force desktop view on mobile by setting zoom
                 const zoom = (window.innerWidth / 1024);
-                document.body.style.zoom = zoom;
-                // For browsers that don't support zoom
-                document.body.style.transform = `scale(${zoom})`;
-                document.body.style.transformOrigin = 'top left';
+                // Apply zoom to the calculator page container instead of body
+                const container = document.querySelector('.calculator-page');
+                if (container) {
+                    container.style.transform = `scale(${zoom})`;
+                    // Adjust the height to account for the scaling
+                    document.body.style.minHeight = `${Math.ceil(window.innerHeight / zoom)}px`;
+                }
             } else {
-                document.body.style.zoom = 1;
-                document.body.style.transform = 'none';
+                const container = document.querySelector('.calculator-page');
+                if (container) {
+                    container.style.transform = 'none';
+                }
+                document.body.style.minHeight = 'auto';
             }
         };
 
