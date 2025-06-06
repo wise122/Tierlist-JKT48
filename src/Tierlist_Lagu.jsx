@@ -181,8 +181,23 @@ const DraggableImage = ({ song, isDragging, dragOverlay, onImageClick, onContext
 
     // Get the selected setlist from localStorage
     const selectedSetlist = localStorage.getItem('selectedSetlist') || "Aturan Anti Cinta";
-    // Convert the setlist name to the image filename format
-    const imageFilename = selectedSetlist.replace(/ /g, '_');
+    
+    // Map of special cases where the filename differs from the standard format
+    const specialCases = {
+        "BELIEVE": "BELIEVE",
+        "Fly! Team T": "Fly!_Team_T",
+        "Ingin Bertemu": "Ingin_Bertemu"
+    };
+
+    // Get the filename, either from special cases or by standard formatting
+    const imageFilename = specialCases[selectedSetlist] || 
+        selectedSetlist
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('_');
+
+    // Special case for file extension
+    const extension = selectedSetlist === "Ingin Bertemu" ? 'webp' : 'jpg';
 
     return (
         <div
@@ -192,7 +207,7 @@ const DraggableImage = ({ song, isDragging, dragOverlay, onImageClick, onContext
             onContextMenu={(e) => onContextMenu && onContextMenu(e, song)}
         >
             <img 
-                src={`/asset/Setlist/${imageFilename}.jpg`} 
+                src={`/asset/Setlist/${imageFilename}.${extension}`} 
                 alt={song.name} 
                 className="song-background"
             />
