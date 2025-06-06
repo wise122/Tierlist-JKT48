@@ -13,5 +13,6 @@ export const ssRamadanFiles = [
     'Sharehouse48.webp',
     'The_Quiz_Show.jpg',
     'The_Slap_Show.jpg',
+    'University_of_Efex.jpg',
     'Vocal_Queen.jpg'
 ];
