@@ -112,7 +112,9 @@ const formatMemberName = (filename) => {
     
     // Special handling for JKT48V members
     if (parts[0] === 'JKT48V') {
-        return parts.slice(3).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+        // Join all parts after "Gen1" or "Gen2" to form the full name
+        const genIndex = parts.findIndex(part => part.startsWith('Gen'));
+        return parts.slice(genIndex + 1).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     }
     
     // Regular handling for other members
@@ -632,8 +634,8 @@ const Tierlist = () => {
                 : true;
             return matchesContainer && matchesSearch;
         });
-        // Sort by original index when in image pool
-        if (containerId === 'image-pool') {
+        // Sort by original index when in image pool or when not in drag mode
+        if (containerId === 'image-pool' || !isDragMode) {
             return filteredImages.sort((a, b) => a.originalIndex - b.originalIndex);
         }
         return filteredImages;
@@ -925,11 +927,22 @@ const Tierlist = () => {
     const handleTierClick = (tierId) => {
         if (!isDragMode && selectedImage) {
             setImages(prev => {
+                // Find the maximum originalIndex in the target tier
+                const maxIndex = Math.max(...prev
+                    .filter(img => img.containerId === tierId)
+                    .map(img => img.originalIndex), -1);
+                
+                // Create new array with updated image
                 const newImages = prev.map(img => 
                     img.id === selectedImage.id 
-                        ? { ...img, containerId: tierId }
+                        ? { 
+                            ...img, 
+                            containerId: tierId,
+                            originalIndex: maxIndex + 1  // Set new index higher than existing ones
+                        }
                         : img
                 );
+                
                 // Clear selection after placing
                 setTimeout(() => setSelectedImage(null), 50);
                 return newImages;
