@@ -45,7 +45,8 @@
 }
 
 .member-dropdown {
-    width: 100%;
+    flex: 1;
+    min-width: 200px;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -165,4 +166,31 @@
         gap: 1rem;
         padding: 0.5rem;
     }
+}
+
+.dropdown-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.draft-dropdown {
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #be2016;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    cursor: pointer;
+    min-width: 250px;
+    max-width: 400px;
+    flex: 1;
+}
+
+.draft-dropdown option {
+    background-color: #2a2a3e;
+    color: white;
+    padding: 8px;
 }

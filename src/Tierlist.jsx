@@ -288,7 +288,7 @@ const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelec
     );
 };
 
-const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow, children }) => {
+const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
     
@@ -378,7 +378,6 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow, children 
                     <ListItemText>Delete Row</ListItemText>
                 </MenuItem>
             </Menu>
-            {children}
         </div>
     );
 };
@@ -401,29 +400,91 @@ const Tierlist = () => {
     const [tierlistTitle, setTierlistTitle] = useState('');
     const [titlePosition, setTitlePosition] = useState({ left: 0, width: 0 });
     const [inputWidth, setInputWidth] = useState(300); // minimum width
+    const [moveCounter, setMoveCounter] = useState(0);
+    const [showAutoSave, setShowAutoSave] = useState(false);
+    const [availableCount, setAvailableCount] = useState(0);
+    const [lastAvailableCount, setLastAvailableCount] = useState(0);
+    const [changeCounter, setChangeCounter] = useState(0);
 
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 1,
-                delay: 50,
-                tolerance: 5,
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
+    // Track changes in available items count
+    useEffect(() => {
+        const currentAvailable = images.filter(img => img.containerId === 'image-pool').length;
+        
+        // Only count as a change if the number actually changed
+        if (currentAvailable !== availableCount) {
+            setAvailableCount(currentAvailable);
+            setLastAvailableCount(availableCount);
+            setChangeCounter(prev => prev + 1);
+            console.log('Available count changed:', currentAvailable, 'Change counter:', changeCounter + 1);
+        }
+    }, [images]);
+
+    // Auto-save effect
+    useEffect(() => {
+        console.log('Change counter:', changeCounter);
+        if (changeCounter >= 5) {  // Changed from 2 to 5
+            console.log('Auto-saving draft...');
+            const draft = {
+                type: tierlistType,
+                rows: rows,
+                images: images.map(img => ({
+                    id: img.id,
+                    containerId: img.containerId
+                })),
+                title: tierlistTitle,
+                savedAt: new Date().toISOString(),
+                isAutoSave: true
+            };
+            manageDrafts(draft, true);
+            setChangeCounter(0);
+            console.log('Draft auto-saved');
+        }
+    }, [changeCounter, rows, images, tierlistTitle, tierlistType]);
+
+    // Function to calculate completion percentage
+    const calculateCompletion = (draftImages) => {
+        const totalImages = draftImages.length;
+        const placedImages = draftImages.filter(img => img.containerId !== 'image-pool').length;
+        return Math.round((placedImages / totalImages) * 100);
+    };
+
+    // Function to manage drafts in localStorage
+    const manageDrafts = (newDraft, isAutoSave = false) => {
+        console.log('Managing drafts, isAutoSave:', isAutoSave);
+        const storageKey = isAutoSave ? 'tierlistAutoSaveDrafts' : 'tierlistManualDrafts';
+        const maxDrafts = isAutoSave ? 3 : 5;
+        
+        let drafts = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        console.log('Current drafts:', drafts);
+        drafts = drafts.filter(d => d.type === tierlistType); // Only keep drafts of the same type
+        
+        // Add new draft
+        drafts.unshift({
+            ...newDraft,
+            type: tierlistType,
+            completion: calculateCompletion(newDraft.images),
+            isAutoSave,
+            id: Date.now()  // Unique ID for the draft
+        });
+        
+        // Keep only the most recent drafts
+        drafts = drafts.slice(0, maxDrafts);
+        console.log('Updated drafts:', drafts);
+        
+        localStorage.setItem(storageKey, JSON.stringify(drafts));
+    };
 
     useEffect(() => {
         const tierlistType = localStorage.getItem('tierlistType') || 'member';
         const memberType = localStorage.getItem('memberType') || 'active';
         const generation = localStorage.getItem('generation') || 'all';
         const videoType = localStorage.getItem('videoType') || 'all';
+        const draftId = localStorage.getItem('currentDraftId');
         
         setTierlistType(tierlistType);
-        console.log('Loading images with:', { tierlistType, memberType, generation, videoType });
+        console.log('Initial load with:', { tierlistType, memberType, generation, videoType, draftId });
 
+        // Load the base image list
         let imageList = [];
 
         if (tierlistType === 'setlist') {
@@ -503,9 +564,55 @@ const Tierlist = () => {
             }
         }
 
-        console.log('Final image list:', imageList);
+        // If we have a draft ID, try to load the draft
+        if (draftId) {
+            console.log('Loading draft with ID:', draftId);
+            const manualDrafts = JSON.parse(localStorage.getItem('tierlistManualDrafts') || '[]');
+            const autoDrafts = JSON.parse(localStorage.getItem('tierlistAutoSaveDrafts') || '[]');
+            const allDrafts = [...manualDrafts, ...autoDrafts];
+            
+            const draftToLoad = allDrafts.find(d => d.id.toString() === draftId.toString());
+            console.log('Found draft:', draftToLoad);
+
+            if (draftToLoad) {
+                // Apply draft data
+                setRows(draftToLoad.rows || initialRows);
+                setTierlistTitle(draftToLoad.title || '');
+
+                // Apply image positions from draft
+                imageList = imageList.map(img => {
+                    const savedImage = draftToLoad.images.find(i => i.id === img.id);
+                    if (savedImage) {
+                        console.log(`Moving ${img.id} to ${savedImage.containerId}`);
+                        return { ...img, containerId: savedImage.containerId };
+                    }
+                    return img;
+                });
+            }
+        } else {
+            // Starting fresh - use initial rows
+            console.log('Starting fresh tierlist');
+            setRows(initialRows);
+            setTierlistTitle('');
+        }
+
+        // Set the final image list
+        console.log('Setting final image list:', imageList);
         setImages(imageList);
     }, []);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 1,
+                delay: 50,
+                tolerance: 5,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const handleDragStart = (event) => {
         if (!isDragMode) return;  // Add this line to prevent drag in click mode
@@ -555,7 +662,7 @@ const Tierlist = () => {
     };
 
     const handleDragEnd = (event) => {
-        if (!isDragMode) return;  // Add this line to prevent drag in click mode
+        if (!isDragMode) return;
         const { active, over } = event;
         if (!over) {
             setActiveId(null);
@@ -563,12 +670,12 @@ const Tierlist = () => {
         }
 
         const overId = over.id;
+        const activeImage = images.find(img => img.id === active.id);
+        const overContainer = overId;
         
+        // Check if moving to a different container
         if (rows.find(row => row.id === overId) || overId === 'image-pool') {
             setImages(prev => {
-                const activeImage = prev.find(img => img.id === active.id);
-                const overContainer = overId;
-                
                 // Remove the dragged image from its current position
                 const newImages = prev.filter(img => img.id !== active.id);
                 
@@ -594,23 +701,6 @@ const Tierlist = () => {
                 newImages.splice(lastContainerImageIndex + 1, 0, updatedImage);
                 return newImages;
             });
-        } else {
-            // If dropping onto another image, swap positions
-            const activeIndex = images.findIndex(img => img.id === active.id);
-            const overIndex = images.findIndex(img => img.id === over.id);
-            
-            if (activeIndex !== -1 && overIndex !== -1) {
-                setImages(prev => {
-                    const activeImage = prev[activeIndex];
-                    const overImage = prev[overIndex];
-                    
-                    // Only swap if they're in the same container
-                    if (activeImage.containerId === overImage.containerId) {
-                        return arrayMove(prev, activeIndex, overIndex);
-                    }
-                    return prev;
-                });
-            }
         }
 
         setActiveId(null);
@@ -1028,6 +1118,30 @@ const Tierlist = () => {
         }
     };
 
+    const handleSaveDraft = () => {
+        const draft = {
+            type: tierlistType,
+            rows: rows,
+            images: images.map(img => ({
+                id: img.id,
+                containerId: img.containerId
+            })),
+            title: tierlistTitle,
+            savedAt: new Date().toISOString()
+        };
+        manageDrafts(draft, false);
+        alert('Tierlist saved as draft!');
+    };
+
+    const handleClearDraft = () => {
+        if (window.confirm('Are you sure you want to clear all saved drafts?')) {
+            localStorage.removeItem('tierlistManualDrafts');
+            localStorage.removeItem('tierlistAutoSaveDrafts');
+            localStorage.removeItem('currentDraftId');
+            alert('All drafts cleared!');
+        }
+    };
+
     return (
         <div className="tierlist-page">
             <header className="header">
@@ -1231,6 +1345,24 @@ const Tierlist = () => {
                         >
                             Save as Image
                         </Button>
+                        <Button
+                            variant="contained"
+                            color="info"
+                            startIcon={<Save />}
+                            onClick={handleSaveDraft}
+                            className="action-button"
+                        >
+                            Save Draft
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<Delete />}
+                            onClick={handleClearDraft}
+                            className="action-button"
+                        >
+                            Clear Draft
+                        </Button>
                     </div>
 
                     <div className="image-pool-container">
@@ -1333,7 +1465,26 @@ const Tierlist = () => {
                         fullWidth
                         value={editingRow.name}
                         onChange={(e) => setEditingRow({ ...editingRow, name: e.target.value })}
-                        sx={{ mb: 2 }}
+                        sx={{ 
+                            mb: 2,
+                            '& .MuiInputBase-input': {
+                                color: 'white',
+                            },
+                            '& .MuiInputLabel-root': {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: '#90caf9',
+                                },
+                            },
+                        }}
                     />
                     <Box sx={{ mb: 1 }}>Row Color:</Box>
                     <Grid container spacing={1}>
@@ -1370,8 +1521,18 @@ const Tierlist = () => {
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleRowSave}>Save</Button>
+                    <Button 
+                        onClick={() => setDialogOpen(false)}
+                        sx={{ color: 'white' }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button 
+                        onClick={handleRowSave}
+                        sx={{ color: 'white' }}
+                    >
+                        Save
+                    </Button>
                 </DialogActions>
             </Dialog>
         </div>

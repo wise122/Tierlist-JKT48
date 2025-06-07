@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Homepage.css';
 import logo from './assets/icon/TierlistIcon.png';
 import { setlistSongs } from './data/setlistSongs';
+import { formatDistanceToNow } from 'date-fns';
 
 const Homepage = () => {
     const [tierlistType, setTierlistType] = useState('');
@@ -11,6 +12,7 @@ const Homepage = () => {
     const [selectedVideoType, setSelectedVideoType] = useState('all');
     const [selectedSetlist, setSelectedSetlist] = useState('');
     const [showPopup, setShowPopup] = useState(false);
+    const [drafts, setDrafts] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,6 +27,24 @@ const Homepage = () => {
             document.head.appendChild(meta);
         }
     }, []);
+
+    // Load available drafts when tierlist type changes
+    useEffect(() => {
+        if (!tierlistType) {
+            setDrafts([]);
+            return;
+        }
+
+        const manualDrafts = JSON.parse(localStorage.getItem('tierlistManualDrafts') || '[]');
+        const autoDrafts = JSON.parse(localStorage.getItem('tierlistAutoSaveDrafts') || '[]');
+        
+        // Filter drafts based on tierlist type and sort by date
+        const relevantDrafts = [...manualDrafts, ...autoDrafts]
+            .filter(draft => draft.type === tierlistType)
+            .sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
+
+        setDrafts(relevantDrafts);
+    }, [tierlistType]);
 
     const handleTierlistTypeChange = (event) => {
         setTierlistType(event.target.value);
@@ -54,12 +74,43 @@ const Homepage = () => {
         setSelectedSetlist(event.target.value);
     };
 
+    const handleDraftSelect = (event) => {
+        const draftId = event.target.value;
+        if (!draftId) return;
+
+        console.log('Selected draft ID:', draftId);
+
+        // Store the selected draft ID
+        localStorage.setItem('currentDraftId', draftId);
+        console.log('Stored draft ID in localStorage:', localStorage.getItem('currentDraftId'));
+
+        // Get the draft details
+        const manualDrafts = JSON.parse(localStorage.getItem('tierlistManualDrafts') || '[]');
+        const autoDrafts = JSON.parse(localStorage.getItem('tierlistAutoSaveDrafts') || '[]');
+        const allDrafts = [...manualDrafts, ...autoDrafts];
+        const draft = allDrafts.find(d => d.id.toString() === draftId);
+        console.log('Found draft:', draft);
+
+        // Navigate to the appropriate tierlist page
+        if (draft.type === 'song') {
+            localStorage.setItem('selectedSetlist', draft.setlist);
+            navigate('/tierlist_lagu');
+        } else {
+            localStorage.setItem('tierlistType', draft.type);
+            navigate('/tierlist');
+        }
+    };
+
     const handleStart = () => {
         if (!tierlistType) {
             setShowPopup(true);
             setTimeout(() => setShowPopup(false), 3000);
             return;
         }
+
+        // Just clear current draft ID to ensure fresh start
+        // but don't clear saved drafts!
+        localStorage.removeItem('currentDraftId');
 
         if (tierlistType === 'setlist' || tierlistType === 'ramadan') {
             localStorage.setItem('tierlistType', tierlistType);
@@ -114,18 +165,66 @@ const Homepage = () => {
             <img src={logo} alt="JKT48 Tierlist Logo" className="app-logo" />
             <h1 className="title">JKT48 Tierlist</h1>
             <div className="dropdown-container">
-                <select 
-                    value={tierlistType} 
-                    onChange={handleTierlistTypeChange}
-                    className="member-dropdown"
-                >
-                    <option value="">-- Select Tierlist Type --</option>
-                    <option value="member">Member Tierlist</option>
-                    <option value="setlist">Setlist Tierlist</option>
-                    <option value="ramadan">Special Show Ramadan</option>
-                    <option value="video">SPV and MV</option>
-                    <option value="setlist_song">Setlist's Song</option>
-                </select>
+                <div className="dropdown-row">
+                    <select 
+                        value={tierlistType} 
+                        onChange={handleTierlistTypeChange}
+                        className="member-dropdown"
+                    >
+                        <option value="">-- Select Tierlist Type --</option>
+                        <option value="member">Member Tierlist</option>
+                        <option value="setlist">Setlist Tierlist</option>
+                        <option value="ramadan">Special Show Ramadan</option>
+                        <option value="video">SPV and MV</option>
+                        <option value="setlist_song">Setlist's Song</option>
+                    </select>
+
+                    {drafts.length > 0 && (
+                        <select
+                            onChange={handleDraftSelect}
+                            className="draft-dropdown"
+                            defaultValue=""
+                            style={{
+                                backgroundColor: 'white',
+                                color: 'black',
+                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                border: '1px solid rgba(0, 0, 0, 0.23)',
+                                fontSize: '16px'
+                            }}
+                        >
+                            <option value="">-- Load Draft --</option>
+                            {drafts.map(draft => {
+                                const timeAgo = formatDistanceToNow(new Date(draft.savedAt), { addSuffix: true });
+                                const shortTimeAgo = timeAgo
+                                    .replace(' minutes', 'm')
+                                    .replace(' minute', 'm')
+                                    .replace(' hours', 'h')
+                                    .replace(' hour', 'h')
+                                    .replace(' days', 'd')
+                                    .replace(' day', 'd')
+                                    .replace(' ago', '')
+                                    .replace('about ', '');
+                                
+                                const draftName = draft.title || 'Untitled';
+                                const displayName = draft.isAutoSave ? `${draftName} (AutoSaved)` : draftName;
+                                
+                                return (
+                                    <option 
+                                        key={draft.id} 
+                                        value={draft.id}
+                                        style={{
+                                            backgroundColor: 'white',
+                                            color: 'black'
+                                        }}
+                                    >
+                                        {displayName} • {draft.completion}% • {shortTimeAgo}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                    )}
+                </div>
 
                 {/* Video type dropdown */}
                 <div className={`member-dropdowns-container ${tierlistType === 'video' ? 'show' : ''}`}>

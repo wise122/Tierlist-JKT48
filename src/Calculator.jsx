@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CalculatorPage.css';
 import {
@@ -26,6 +26,8 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    FormControlLabel,
+    Checkbox,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -91,11 +93,202 @@ const formatPrice = (price) => {
 const Calculator = () => {
     const navigate = useNavigate();
     const wishlistRef = useRef(null);
+    const titleInputRef = useRef(null);
     const [wishlist, setWishlist] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [customPrice, setCustomPrice] = useState('');
     const [showWelcomeDialog, setShowWelcomeDialog] = useState(true);
+    const [calculatorTitle, setCalculatorTitle] = useState('');
+    const [titlePosition, setTitlePosition] = useState({ left: 0, width: 0 });
+    const [inputWidth, setInputWidth] = useState(300);
+    const [changeCounter, setChangeCounter] = useState(0);
+    const [selectedDraft, setSelectedDraft] = useState('');
+    const [drafts, setDrafts] = useState([]);
     const categories = getAllCategories();
+
+    // Function to load drafts
+    const loadDrafts = () => {
+        const manualDrafts = JSON.parse(localStorage.getItem('calculatorManualDrafts') || '[]');
+        const autoDrafts = JSON.parse(localStorage.getItem('calculatorAutoSaveDrafts') || '[]');
+        
+        // Combine and sort drafts by date
+        const allDrafts = [...manualDrafts, ...autoDrafts]
+            .sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
+        
+        setDrafts(allDrafts);
+        return allDrafts;
+    };
+
+    // Load drafts and initialize with latest draft on component mount
+    useEffect(() => {
+        const allDrafts = loadDrafts();
+        
+        // Get the specifically selected draft ID or use the most recent draft
+        const draftId = localStorage.getItem('currentCalculatorDraftId');
+        const draftToLoad = draftId 
+            ? allDrafts.find(d => d.id.toString() === draftId)
+            : allDrafts[0]; // Most recent draft
+
+        if (draftToLoad) {
+            setWishlist(draftToLoad.wishlist);
+            setCalculatorTitle(draftToLoad.title || '');
+        }
+
+        // Clear the current draft ID after loading
+        localStorage.removeItem('currentCalculatorDraftId');
+    }, []);
+
+    // Auto-save when changeCounter reaches 2
+    useEffect(() => {
+        if (changeCounter >= 2 && wishlist.length > 0) {
+            handleAutoSave();
+            setChangeCounter(0);
+        }
+    }, [changeCounter, wishlist]);
+
+    // Update change counter when wishlist changes
+    useEffect(() => {
+        if (wishlist.length > 0) {
+            setChangeCounter(prev => prev + 1);
+        }
+    }, [wishlist]);
+
+    const handleAutoSave = () => {
+        if (wishlist.length === 0) return;
+
+        const totalAmount = calculateTotal();
+        const formattedTotal = formatPrice(totalAmount).replace('Rp', 'IDR');
+        const baseTitle = calculatorTitle || 'Untitled Wishlist';
+        const fullTitle = `${baseTitle} (${formattedTotal})`;
+
+        const draft = {
+            title: fullTitle,
+            wishlist: wishlist,
+            savedAt: new Date().toISOString(),
+            isAutoSave: true,
+            id: Date.now()
+        };
+
+        const autoDrafts = JSON.parse(localStorage.getItem('calculatorAutoSaveDrafts') || '[]');
+        autoDrafts.unshift(draft);
+        
+        // Keep only the latest 3 auto-save drafts
+        const updatedAutoDrafts = autoDrafts.slice(0, 3);
+        
+        localStorage.setItem('calculatorAutoSaveDrafts', JSON.stringify(updatedAutoDrafts));
+        loadDrafts();
+    };
+
+    const handleSaveDraft = () => {
+        if (wishlist.length === 0) {
+            alert('Add some items to your wishlist first!');
+            return;
+        }
+
+        const totalAmount = calculateTotal();
+        const formattedTotal = formatPrice(totalAmount).replace('Rp', 'IDR');
+        const baseTitle = calculatorTitle || 'Untitled Wishlist';
+        const fullTitle = `${baseTitle} (${formattedTotal})`;
+
+        const draft = {
+            title: fullTitle,
+            wishlist: wishlist,
+            savedAt: new Date().toISOString(),
+            isAutoSave: false,
+            id: Date.now()
+        };
+
+        const manualDrafts = JSON.parse(localStorage.getItem('calculatorManualDrafts') || '[]');
+        manualDrafts.unshift(draft);
+        
+        // Keep only the latest 5 manual drafts
+        const updatedManualDrafts = manualDrafts.slice(0, 5);
+        
+        localStorage.setItem('calculatorManualDrafts', JSON.stringify(updatedManualDrafts));
+        loadDrafts();
+        alert('Wishlist saved as draft!');
+    };
+
+    const handleLoadDraft = (event) => {
+        const draftId = event.target.value;
+        console.log('Selected draft ID:', draftId); // Debug log
+        
+        if (!draftId) {
+            setSelectedDraft('');
+            return;
+        }
+
+        // Get fresh copies of drafts from localStorage
+        const manualDrafts = JSON.parse(localStorage.getItem('calculatorManualDrafts') || '[]');
+        const autoDrafts = JSON.parse(localStorage.getItem('calculatorAutoSaveDrafts') || '[]');
+        const allDrafts = [...manualDrafts, ...autoDrafts];
+        
+        const draft = allDrafts.find(d => d.id.toString() === draftId.toString());
+        console.log('Found draft:', draft); // Debug log
+        
+        if (draft && draft.wishlist) {
+            // Update the wishlist state with the draft data
+            setWishlist(prevWishlist => {
+                console.log('Setting wishlist:', draft.wishlist); // Debug log
+                return [...draft.wishlist];
+            });
+            
+            // Update the title
+            setCalculatorTitle(draft.title || '');
+            
+            // Update selected draft state
+            setSelectedDraft(draftId);
+            
+            // Clear selection after a short delay
+            setTimeout(() => {
+                setSelectedDraft('');
+            }, 100);
+        }
+    };
+
+    // Add useEffect for title input width calculation
+    useEffect(() => {
+        const updateWidth = () => {
+            if (titleInputRef.current && wishlistRef.current) {
+                // Get the width of the content area for reference
+                const contentArea = wishlistRef.current.querySelector('.MuiCardContent-root');
+                if (!contentArea) return;
+
+                const contentWidth = contentArea.offsetWidth;
+                
+                // Create a hidden span to measure text width
+                const span = document.createElement('span');
+                span.className = 'calculator-title-measure';
+                span.style.font = window.getComputedStyle(titleInputRef.current).font;
+                span.textContent = calculatorTitle || titleInputRef.current.placeholder;
+                document.body.appendChild(span);
+                
+                // Calculate width with padding
+                const textWidth = span.offsetWidth;
+                const padding = 24; // 12px padding on each side
+                const newWidth = Math.min(Math.max(300, textWidth + padding), contentWidth - 40); // between 300px and content width
+                
+                document.body.removeChild(span);
+                setInputWidth(newWidth);
+                
+                // Update position for header title
+                const contentRect = contentArea.getBoundingClientRect();
+                const viewportWidth = document.documentElement.clientWidth;
+                const contentCenterX = contentRect.left + (contentRect.width / 2);
+                const leftPosition = (contentCenterX / viewportWidth) * 100;
+
+                setTitlePosition({
+                    left: `${leftPosition}%`,
+                    transform: 'translateX(-50%)',
+                    width: newWidth
+                });
+            }
+        };
+
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, [calculatorTitle]);
 
     const handleCategoryChange = (event) => {
         const category = event.target.value;
@@ -131,7 +324,8 @@ const Calculator = () => {
             quantity: 1,
             description: '',
             type: categoryInfo.type,
-            unit: categoryInfo.unit
+            unit: categoryInfo.unit,
+            purchased: false
         };
 
         setWishlist([...wishlist, newItem]);
@@ -163,41 +357,67 @@ const Calculator = () => {
         ));
     };
 
-    const calculateTotal = () => {
-        return wishlist.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const handlePurchasedChange = (id) => {
+        setWishlist(wishlist.map(item => 
+            item.id === id ? { ...item, purchased: !item.purchased } : item
+        ));
+    };
+
+    const calculateTotal = (onlyPurchased = false) => {
+        return wishlist.reduce((total, item) => {
+            if (onlyPurchased ? item.purchased : !item.purchased) {
+                return total + (item.price * item.quantity);
+            }
+            return total;
+        }, 0);
     };
 
     const handleSaveImage = async () => {
         if (!wishlistRef.current || wishlist.length === 0) return;
 
         try {
-            // Create a temporary container with dark background
+            // Get the dimensions from the content area
+            const contentArea = wishlistRef.current.querySelector('.MuiCardContent-root');
+            if (!contentArea) return;
+
+            // Create a temporary container for the title and wishlist
             const tempContainer = document.createElement('div');
             tempContainer.style.backgroundColor = '#323342';
             tempContainer.style.padding = '20px';
             tempContainer.style.borderRadius = '8px';
+            tempContainer.style.width = `${contentArea.offsetWidth}px`;
+
+            // Add the title if it exists
+            if (calculatorTitle) {
+                const titleContainer = document.createElement('div');
+                titleContainer.style.width = '100%';
+                titleContainer.style.display = 'flex';
+                titleContainer.style.justifyContent = 'center';
+                titleContainer.style.marginBottom = '20px';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.style.color = 'white';
+                titleDiv.style.fontSize = '32px';
+                titleDiv.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+                titleDiv.style.whiteSpace = 'nowrap';
+                titleDiv.textContent = calculatorTitle;
+                titleDiv.style.textAlign = 'center';
+
+                titleContainer.appendChild(titleDiv);
+                tempContainer.appendChild(titleContainer);
+            }
 
             // Clone the wishlist content
-            const wishlistClone = wishlistRef.current.cloneNode(true);
+            const contentClone = contentArea.cloneNode(true);
             
             // Remove any buttons and unnecessary interactive elements
-            const elementsToRemove = wishlistClone.querySelectorAll('button, .MuiIconButton-root');
+            const elementsToRemove = contentClone.querySelectorAll('button, .MuiIconButton-root, .button-container');
             elementsToRemove.forEach(el => el.remove());
 
-            // Add the total to the bottom
-            const totalDiv = document.createElement('div');
-            totalDiv.style.textAlign = 'right';
-            totalDiv.style.marginTop = '16px';
-            totalDiv.style.color = 'white';
-            totalDiv.style.fontSize = '20px';
-            totalDiv.style.fontWeight = '500';
-            totalDiv.innerHTML = `Total: ${formatPrice(calculateTotal())}`;
+            // Add the content to the container
+            tempContainer.appendChild(contentClone);
 
-            // Add content to container
-            tempContainer.appendChild(wishlistClone);
-            tempContainer.appendChild(totalDiv);
-
-            // Add to document temporarily
+            // Add to document temporarily for rendering
             document.body.appendChild(tempContainer);
 
             const options = {
@@ -336,34 +556,88 @@ const Calculator = () => {
 
                 {/* Fixed Header */}
                 <AppBar position="fixed" sx={{ bgcolor: '#323342', borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}>
-                    <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
-                        <IconButton
-                            edge="start"
-                            color="inherit"
-                            onClick={() => navigate('/')}
-                            sx={{ mr: 2 }}
-                        >
-                            <ArrowBackIcon />
-                        </IconButton>
-                        <img 
-                            src={calculatorLogo} 
-                            alt="Calculator Logo" 
-                            style={{ 
-                                height: '40px',
-                                marginRight: '12px'
-                            }} 
-                        />
-                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                            JKT48 Wishlist Calculator
-                        </Typography>
-                    </Toolbar>
+                    <Box sx={{ position: 'relative' }}>
+                        <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
+                            <IconButton
+                                edge="start"
+                                color="inherit"
+                                onClick={() => navigate('/')}
+                                sx={{ mr: 2 }}
+                            >
+                                <ArrowBackIcon />
+                            </IconButton>
+                            <img 
+                                src={calculatorLogo} 
+                                alt="Calculator Logo" 
+                                style={{ 
+                                    height: '40px',
+                                    marginRight: '12px'
+                                }} 
+                            />
+                            <Typography variant="h6" component="div">
+                                JKT48 Wishlist Calculator
+                            </Typography>
+                            {calculatorTitle && (
+                                <Box 
+                                    sx={{ 
+                                        position: 'absolute',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        width: 'auto',
+                                        textAlign: 'center',
+                                        pointerEvents: 'none'
+                                    }}
+                                >
+                                    <Typography 
+                                        variant="h6" 
+                                        sx={{ 
+                                            color: 'white',
+                                            whiteSpace: 'nowrap',
+                                            fontSize: '2.5rem',
+                                            fontWeight: 500
+                                        }}
+                                    >
+                                        {calculatorTitle}
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Toolbar>
+                    </Box>
                 </AppBar>
 
                 {/* Main Content */}
                 <Box sx={{ pt: '64px' }}>
                     <Container maxWidth="md" sx={{ py: 4 }}>
-                        <Card sx={{ bgcolor: '#323342', boxShadow: 'none' }}>
+                        <Card sx={{ bgcolor: '#323342', boxShadow: 'none' }} ref={wishlistRef}>
                             <CardContent>
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'center', 
+                                    mb: 3,
+                                    mt: 2
+                                }}>
+                                    <input
+                                        ref={titleInputRef}
+                                        type="text"
+                                        className="calculator-title"
+                                        value={calculatorTitle}
+                                        onChange={(e) => setCalculatorTitle(e.target.value)}
+                                        placeholder="My JKT48 Wishlist"
+                                        spellCheck="false"
+                                        style={{ 
+                                            width: `${inputWidth}px`,
+                                            fontSize: '32px',
+                                            padding: '8px 12px',
+                                            backgroundColor: 'transparent',
+                                            border: '1px solid rgba(255, 255, 255, 0.23)',
+                                            borderRadius: '4px',
+                                            color: 'white',
+                                            textAlign: 'center'
+                                        }}
+                                        maxLength={90}
+                                    />
+                                </Box>
+
                                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                                     <FormControl fullWidth size="small">
                                         <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Select Category</InputLabel>
@@ -429,6 +703,27 @@ const Calculator = () => {
                                                             </Typography>
                                                         </Box>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                            <FormControlLabel
+                                                                control={
+                                                                    <Checkbox
+                                                                        checked={item.purchased}
+                                                                        onChange={() => handlePurchasedChange(item.id)}
+                                                                        sx={{
+                                                                            color: 'rgba(255, 255, 255, 0.7)',
+                                                                            '&.Mui-checked': {
+                                                                                color: '#4CAF50'
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                }
+                                                                label="Sudah dibeli"
+                                                                sx={{
+                                                                    color: 'rgba(255, 255, 255, 0.7)',
+                                                                    '& .MuiFormControlLabel-label': {
+                                                                        fontSize: '0.875rem'
+                                                                    }
+                                                                }}
+                                                            />
                                                             {isUserDefinedPrice(item.category) && (
                                                                 <TextField
                                                                     label="Price"
@@ -530,9 +825,71 @@ const Calculator = () => {
                                             Reset
                                         </Button>
                                     </Box>
-                                    <Typography variant="h6" className="total-amount" sx={{ color: 'white' }}>
-                                        Total: {formatPrice(calculateTotal())}
-                                    </Typography>
+                                    <Box sx={{ textAlign: 'right' }}>
+                                        <Typography variant="h6" className="total-amount" sx={{ color: 'white' }}>
+                                            Total: {formatPrice(calculateTotal())}
+                                        </Typography>
+                                        <Typography variant="subtitle1" sx={{ color: '#4CAF50', mt: 1 }}>
+                                            Total Terbeli: {formatPrice(calculateTotal(true))}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+
+                                <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <FormControl fullWidth>
+                                        <InputLabel id="draft-select-label" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                                            Load Draft
+                                        </InputLabel>
+                                        <Select
+                                            labelId="draft-select-label"
+                                            id="draft-select"
+                                            value={selectedDraft}
+                                            onChange={handleLoadDraft}
+                                            label="Load Draft"
+                                            sx={{
+                                                color: 'white',
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: 'rgba(255, 255, 255, 0.23)',
+                                                },
+                                            }}
+                                        >
+                                            <MenuItem value="">
+                                                <em>Select a draft to load</em>
+                                            </MenuItem>
+                                            {drafts.map(draft => (
+                                                <MenuItem 
+                                                    key={draft.id} 
+                                                    value={draft.id.toString()}
+                                                    sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        gap: 1
+                                                    }}
+                                                >
+                                                    <span>{draft.title || 'Untitled Wishlist'}</span>
+                                                    <span style={{ 
+                                                        opacity: 0.7,
+                                                        fontSize: '0.9em',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px'
+                                                    }}>
+                                                        {draft.isAutoSave ? '(AutoSaved)' : ''} {new Date(draft.savedAt).toLocaleString()}
+                                                    </span>
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        startIcon={<SaveIcon />}
+                                        onClick={handleSaveDraft}
+                                        fullWidth
+                                    >
+                                        Save as Draft
+                                    </Button>
                                 </Box>
                             </CardContent>
                         </Card>
