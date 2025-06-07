@@ -159,7 +159,7 @@ const parseNameForSearch = (filename) => {
 
     const searchable = (genPart + ' ' + nameParts.join(' ')).toLowerCase();
 
-    console.log('parseNameForSearch:', filename, '=>', searchable);
+    
 
     return searchable;
 };
