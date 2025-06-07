@@ -108,18 +108,63 @@ const initialRows = [
 
 // Helper function to properly capitalize member names
 const formatMemberName = (filename) => {
-    const parts = filename.split('.')[0].split('_');
-    
-    // Special handling for JKT48V members
-    if (parts[0] === 'JKT48V') {
-        // Join all parts after "Gen1" or "Gen2" to form the full name
-        const genIndex = parts.findIndex(part => part.startsWith('Gen'));
-        return parts.slice(genIndex + 1).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    if (!filename || typeof filename !== 'string') return '';
+
+    const baseName = filename.split('/').pop().split('.')[0]; // ambil bagian terakhir dari path & tanpa extension
+    const parts = baseName.split('_');
+
+    // Kalau prefix JKT48V
+    if (parts[0] && parts[0].toUpperCase() === 'JKT48V') {
+        const genIndex = parts.findIndex(part => part.toLowerCase().startsWith('gen'));
+        if (genIndex !== -1 && parts.length > genIndex + 1) {
+            return parts.slice(genIndex + 1).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+        }
+        // fallback kalau tidak ada gen atau nama
+        return parts.slice(1).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     }
-    
-    // Regular handling for other members
-    return parts.slice(1).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+    // Untuk GenX members (seperti Gen3_shania_gracia)
+    if (parts[0] && parts[0].toLowerCase().startsWith('gen')) {
+        return parts.slice(1).map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    }
+
+    // fallback umum, jika tidak match pola di atas
+    return parts.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 };
+
+
+const parseNameForSearch = (filename) => {
+    if (!filename || typeof filename !== 'string') return '';
+
+    const baseName = filename.split('/').pop().split('.')[0];
+    const parts = baseName.split('_');
+
+    let genPart = '';
+    let nameParts = [];
+
+    if (parts[0].toUpperCase() === 'JKT48V') {
+        const genIndex = parts.findIndex(p => p.toLowerCase().startsWith('gen'));
+        if (genIndex !== -1) {
+            genPart = parts[genIndex];
+            nameParts = parts.slice(genIndex + 1);
+        } else {
+            nameParts = parts.slice(1);
+        }
+    } else if (parts[0].toLowerCase().startsWith('gen')) {
+        genPart = parts[0];
+        nameParts = parts.slice(1);
+    } else {
+        nameParts = parts;
+    }
+
+    const searchable = (genPart + ' ' + nameParts.join(' ')).toLowerCase();
+
+    console.log('parseNameForSearch:', filename, '=>', searchable);
+
+    return searchable;
+};
+
+
 
 // Helper function to properly format setlist names
 const formatSetlistName = (filename) => {
@@ -628,18 +673,35 @@ const Tierlist = () => {
 
     const getImagesForContainer = (containerId) => {
         const filteredImages = images.filter(img => {
-            const matchesContainer = img.containerId === containerId;
-            const matchesSearch = containerId === 'image-pool' 
-                ? img.name.toLowerCase().includes(searchTerm.toLowerCase())
-                : true;
-            return matchesContainer && matchesSearch;
+            if (img.containerId !== containerId) return false;
+    
+            if (containerId === 'image-pool' && searchTerm) {
+                if (!img.id || typeof img.id !== 'string') return false;
+    
+                const searchableName = parseNameForSearch(img.id);
+                const searchLower = searchTerm.toLowerCase();
+    
+                // Memecah kata dari searchTerm
+                const searchWords = searchLower.split(' ').filter(Boolean);
+    
+                // Cek kalau ada kata dari searchWords yang ada di searchableName
+                const matches = searchWords.some(word => searchableName.includes(word));
+    
+                return matches;
+            }
+    
+            return true;
         });
-        // Sort by original index when in image pool or when not in drag mode
+    
         if (containerId === 'image-pool' || !isDragMode) {
             return filteredImages.sort((a, b) => a.originalIndex - b.originalIndex);
         }
+    
         return filteredImages;
     };
+    
+    
+    
 
     const activeImage = activeId ? images.find(img => img.id === activeId) : null;
 
