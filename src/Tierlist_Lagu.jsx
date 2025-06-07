@@ -376,6 +376,11 @@ const Tierlist = () => {
     const [titlePosition, setTitlePosition] = useState({ left: 0, width: 0 });
     const [inputWidth, setInputWidth] = useState(300); // minimum width
     const [selectedSetlist, setSelectedSetlist] = useState('');
+    const [moveCounter, setMoveCounter] = useState(0);
+    const [showAutoSave, setShowAutoSave] = useState(false);
+    const [availableCount, setAvailableCount] = useState(0);
+    const [lastAvailableCount, setLastAvailableCount] = useState(0);
+    const [changeCounter, setChangeCounter] = useState(0);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -393,18 +398,79 @@ const Tierlist = () => {
     useEffect(() => {
         const setlistName = localStorage.getItem('selectedSetlist') || "Aturan Anti Cinta";
         setSelectedSetlist(setlistName);
-        const songList = setlistSongs[setlistName];
-        
-        if (songList) {
-            const songs = songList.map((songName, index) => ({
-                id: `song-${index}`,
-                name: songName,
-                containerId: 'image-pool',
-                originalIndex: index
-            }));
-            setSongs(songs);
+        console.log('Loading songs for setlist:', setlistName);
+
+        // Load songs for the selected setlist
+        const songList = setlistSongs[setlistName].map((songName, index) => ({
+            id: `song-${songName}`,
+            name: songName,
+            containerId: 'image-pool',
+            originalIndex: index
+        }));
+        console.log('Initial song list:', songList);
+
+        // First set the initial song list
+        setSongs(songList);
+
+        // Then check for draft loading
+        const draftId = localStorage.getItem('currentDraftId');
+        console.log('Current draft ID:', draftId);
+
+        if (draftId) {
+            const manualDrafts = JSON.parse(localStorage.getItem('tierlistManualDrafts') || '[]');
+            const autoDrafts = JSON.parse(localStorage.getItem('tierlistAutoSaveDrafts') || '[]');
+            
+            // Combine all drafts
+            const allDrafts = [...manualDrafts, ...autoDrafts];
+            console.log('Available drafts:', allDrafts);
+
+            // Find the specific draft
+            const draftToLoad = allDrafts.find(d => d.id.toString() === draftId.toString());
+            console.log('Found draft to load:', draftToLoad);
+
+            if (draftToLoad) {
+                console.log('Loading draft with rows:', draftToLoad.rows);
+                console.log('Loading draft with songs:', draftToLoad.songs);
+
+                // Set the rows first
+                setRows(draftToLoad.rows || initialRows);
+                setTierlistTitle(draftToLoad.title || '');
+                
+                // Update song positions from draft
+                const updatedSongs = songList.map(song => {
+                    const savedSong = draftToLoad.songs.find(s => s.id === song.id);
+                    console.log(`Mapping song ${song.id}:`, { 
+                        found: !!savedSong, 
+                        newContainer: savedSong?.containerId || 'image-pool' 
+                    });
+                    return savedSong ? { ...song, containerId: savedSong.containerId } : song;
+                });
+                
+                console.log('Final updated songs:', updatedSongs);
+                setSongs(updatedSongs);
+            } else {
+                console.log('No matching draft found for ID:', draftId);
+            }
+        } else {
+            console.log('No draft ID found, starting fresh');
         }
+
+        // Clear the current draft ID after loading
+        localStorage.removeItem('currentDraftId');
     }, []);
+
+    // Track changes in available items count
+    useEffect(() => {
+        const currentAvailable = songs.filter(song => song.containerId === 'image-pool').length;
+        
+        // Only count as a change if the number actually changed
+        if (currentAvailable !== availableCount) {
+            setAvailableCount(currentAvailable);
+            setLastAvailableCount(availableCount);
+            setChangeCounter(prev => prev + 1);
+            console.log('Available count changed:', currentAvailable, 'Change counter:', changeCounter + 1);
+        }
+    }, [songs]);
 
     const handleDragStart = (event) => {
         if (!isDragMode) return;  // Add this line to prevent drag in click mode
@@ -454,7 +520,7 @@ const Tierlist = () => {
     };
 
     const handleDragEnd = (event) => {
-        if (!isDragMode) return;  // Add this line to prevent drag in click mode
+        if (!isDragMode) return;
         const { active, over } = event;
         if (!over) {
             setActiveId(null);
@@ -462,12 +528,12 @@ const Tierlist = () => {
         }
 
         const overId = over.id;
+        const activeImage = songs.find(img => img.id === active.id);
+        const overContainer = overId;
         
+        // Check if moving to a different container
         if (rows.find(row => row.id === overId) || overId === 'image-pool') {
             setSongs(prev => {
-                const activeImage = prev.find(img => img.id === active.id);
-                const overContainer = overId;
-                
                 // Remove the dragged image from its current position
                 const newImages = prev.filter(img => img.id !== active.id);
                 
@@ -867,6 +933,60 @@ const Tierlist = () => {
             default:
                 return 'Member';
         }
+    };
+
+    // Auto-save effect
+    useEffect(() => {
+        console.log('Change counter:', changeCounter);
+        if (changeCounter >= 2) {
+            console.log('Auto-saving draft...');
+            const draft = {
+                type: 'song',
+                setlist: selectedSetlist,
+                rows: rows,
+                songs: songs.map(song => ({
+                    id: song.id,
+                    containerId: song.containerId
+                })),
+                title: tierlistTitle,
+                savedAt: new Date().toISOString(),
+                isAutoSave: true
+            };
+            manageDrafts(draft, true);
+            setChangeCounter(0);
+            
+            // Show auto-save indicator
+            setShowAutoSave(true);
+            setTimeout(() => setShowAutoSave(false), 2000);
+            console.log('Draft auto-saved');
+        }
+    }, [changeCounter, rows, songs, tierlistTitle, selectedSetlist]);
+
+    // Function to manage drafts in localStorage
+    const manageDrafts = (newDraft, isAutoSave = false) => {
+        console.log('Managing drafts, isAutoSave:', isAutoSave);
+        const storageKey = isAutoSave ? 'tierlistAutoSaveDrafts' : 'tierlistManualDrafts';
+        const maxDrafts = isAutoSave ? 3 : 5;
+        
+        let drafts = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        console.log('Current drafts:', drafts);
+        drafts = drafts.filter(d => d.type === 'song' && d.setlist === selectedSetlist); // Only keep drafts of the same type and setlist
+        
+        // Add new draft
+        drafts.unshift({
+            ...newDraft,
+            type: 'song',
+            setlist: selectedSetlist,
+            completion: calculateCompletion(newDraft.songs),
+            isAutoSave,
+            id: Date.now()  // Unique ID for the draft
+        });
+        
+        // Keep only the most recent drafts
+        drafts = drafts.slice(0, maxDrafts);
+        console.log('Updated drafts:', drafts);
+        
+        localStorage.setItem(storageKey, JSON.stringify(drafts));
     };
 
     return (
