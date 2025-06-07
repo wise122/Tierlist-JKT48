@@ -7,7 +7,8 @@ const ViewportManager = () => {
     const updateViewport = () => {
         const viewport = document.querySelector('meta[name="viewport"]');
         if (viewport) {
-            if (location.pathname === '/tierlist') {
+            // Check if current route is either tierlist or tierlist_lagu
+            if (location.pathname === '/tierlist' || location.pathname === '/tierlist_lagu') {
                 // Get the actual screen width (accounting for device pixel ratio)
                 const screenWidth = window.screen.width;
                 if (screenWidth < 1024) {
@@ -16,6 +17,10 @@ const ViewportManager = () => {
                     viewport.setAttribute('content', 
                         `width=1024, initial-scale=${scale}, maximum-scale=${scale}, minimum-scale=${scale}, user-scalable=no`
                     );
+
+                    // Apply styles to ensure footer displays correctly
+                    document.documentElement.style.setProperty('--viewport-scale', scale);
+                    document.body.style.minHeight = `${Math.ceil(100 / parseFloat(scale))}vh`;
 
                     // Force a re-layout after a short delay to ensure the scale is applied
                     setTimeout(() => {
@@ -26,9 +31,13 @@ const ViewportManager = () => {
                     }, 100);
                 } else {
                     viewport.setAttribute('content', 'width=1024, initial-scale=1.0');
+                    document.documentElement.style.removeProperty('--viewport-scale');
+                    document.body.style.minHeight = '100vh';
                 }
             } else {
                 viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=yes');
+                document.documentElement.style.removeProperty('--viewport-scale');
+                document.body.style.minHeight = '100vh';
             }
         }
     };
@@ -39,7 +48,16 @@ const ViewportManager = () => {
 
         // Update after a short delay to ensure proper calculation
         const timeoutId = setTimeout(updateViewport, 100);
-        return () => clearTimeout(timeoutId);
+        return () => {
+            clearTimeout(timeoutId);
+            // Reset viewport and styles when component unmounts
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=yes');
+            }
+            document.documentElement.style.removeProperty('--viewport-scale');
+            document.body.style.minHeight = '100vh';
+        };
     }, [location]);
 
     useEffect(() => {

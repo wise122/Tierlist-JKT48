@@ -4,6 +4,9 @@ import { Analytics } from '@vercel/analytics/react'
 import { Box } from '@mui/material'
 import Homepage from './Homepage'
 import Tierlist from './Tierlist'
+import TierlistLagu from './Tierlist_Lagu'
+import HomepageTierlist from './HomepageTierlist'
+import Calculator from './Calculator'
 import NotFound from './components/NotFound'
 import Footer from './components/Footer'
 import ViewportManager from './components/ViewportManager'
@@ -22,7 +25,10 @@ function App() {
         <Box sx={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<Homepage />} />
+            <Route path="/homepagetierlist" element={<HomepageTierlist />} />
+            <Route path="/calculator" element={<Calculator />} />
             <Route path="/tierlist" element={<Tierlist />} />
+            <Route path="/tierlist_lagu" element={<TierlistLagu />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>

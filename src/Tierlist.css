@@ -22,16 +22,6 @@
     backdrop-filter: blur(5px);
 }
 
-.header-title-container {
-    display: flex;
-    align-items: center;
-    transition: opacity 0.2s ease;
-}
-
-.header-title-container:hover {
-    opacity: 0.8;
-}
-
 .header-logo {
     height: 48px;
     width: 48px;
@@ -122,7 +112,7 @@
 
 .member-image {
     width: 100px;
-    height: 130px;
+    height: 120px;
     border-radius: 8px;
     overflow: hidden;
     background-color: #2a2a3e;
@@ -141,24 +131,28 @@
 
 .member-image img {
     width: 100%;
-    height: 100px;
+    height: 120px;
     object-fit: cover;
     object-position: top center;
     pointer-events: none;
 }
 
 .member-name {
-    height: 30px;
-    padding: 0px 4px;
-    line-height: 26px;
-    background-color: rgba(0, 0, 0, 0.7);
+    height: 24px;
+    padding: 3px 4px;
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
-    font-size: 16px;
+    font-size: 14px;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
 }
 
 
@@ -224,39 +218,12 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.MuiDialogActions-root .MuiButton-root {
-    color: white !important;
-}
-
 .MuiTextField-root {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
 }
 
-.MuiTextField-root .MuiOutlinedInput-root {
-    color: white;
-}
-
-.MuiTextField-root .MuiOutlinedInput-notchedOutline {
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.MuiTextField-root:hover .MuiOutlinedInput-notchedOutline {
-    border-color: rgba(255, 255, 255, 0.5) !important;
-}
-
-.MuiTextField-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-    border-color: #90caf9 !important;
-}
-
-.MuiInputLabel-root {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.MuiInputLabel-root.Mui-focused {
-    color: #90caf9 !important;
-}
-
+.MuiInputLabel-root,
 .MuiInput-root {
     color: white !important;
 }

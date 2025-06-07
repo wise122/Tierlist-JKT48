@@ -2,10 +2,13 @@ import React from 'react';
 import { Box, IconButton, Link, Typography } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import XIcon from '@mui/icons-material/X';
+import { useLocation } from 'react-router-dom';
 
 const Footer = () => {
-  const buttonSize = 30; // Reduced from 60 to 30
+  const buttonSize = 30;
   const backgroundSize = buttonSize * 1.2;
+  const location = useLocation();
+  const isTierlist = location.pathname === '/tierlist' || location.pathname === '/tierlist_lagu';
 
   return (
     <Box
@@ -16,9 +19,12 @@ const Footer = () => {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 1, // Reduced from 2
-        padding: '1rem', // Reduced from 2rem
+        gap: 1,
+        padding: '1rem',
         marginTop: 'auto',
+        position: isTierlist ? 'relative' : 'static',
+        transform: isTierlist ? 'scale(var(--viewport-scale, 1))' : 'none',
+        transformOrigin: 'bottom center',
       }}
     >
       <Typography
@@ -26,9 +32,9 @@ const Footer = () => {
         sx={{
           textAlign: 'center',
           fontWeight: 700,
-          fontSize: '0.75rem', // Reduced from 1.5rem
+          fontSize: '0.75rem',
           color: 'white',
-          marginBottom: 0.75, // Reduced from 1.5
+          marginBottom: 0.75,
           textShadow: `
             -1px -1px 0 #000,  
              1px -1px 0 #000,
@@ -38,7 +44,7 @@ const Footer = () => {
              1.5px 0 0 #000,
              0 -1.5px 0 #000,
              0 1.5px 0 #000
-          `, // Reduced shadow sizes
+          `,
         }}
       >
         You can give Feedback, Contribution, and Bug Report to:
@@ -48,7 +54,7 @@ const Footer = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: 1.5, // Reduced from 3
+          gap: 1.5,
         }}
       >
         <Link
@@ -82,7 +88,7 @@ const Footer = () => {
                 },
               }}
             >
-              <GitHubIcon sx={{ fontSize: '1.25rem' }} /> {/* Reduced from 2.5rem */}
+              <GitHubIcon sx={{ fontSize: '1.25rem' }} />
             </IconButton>
           </Box>
         </Link>
@@ -117,7 +123,7 @@ const Footer = () => {
                 },
               }}
             >
-              <XIcon sx={{ fontSize: '1.25rem' }} /> {/* Reduced from 2.5rem */}
+              <XIcon sx={{ fontSize: '1.25rem' }} />
             </IconButton>
           </Box>
         </Link>
