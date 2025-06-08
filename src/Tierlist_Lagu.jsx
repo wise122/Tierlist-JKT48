@@ -438,7 +438,11 @@ const Tierlist = () => {
                 
                 // Update song positions from draft
                 const updatedSongs = songList.map(song => {
-                    const savedSong = draftToLoad.songs.find(s => s.id === song.id);
+                    // Find the saved song by matching both ID and name for extra safety
+                    const savedSong = draftToLoad.songs.find(s => 
+                        s.id === song.id || 
+                        (s.id === `song-${song.name}` || s.id === `song-${song.id}`)
+                    );
                     console.log(`Mapping song ${song.id}:`, { 
                         found: !!savedSong, 
                         newContainer: savedSong?.containerId || 'image-pool' 
@@ -664,7 +668,7 @@ const Tierlist = () => {
         
         if (songList) {
             const songs = songList.map((songName, index) => ({
-                id: `song-${index}`,
+                id: `song-${songName}`,
                 name: songName,
                 containerId: 'image-pool',
                 originalIndex: index
@@ -933,6 +937,13 @@ const Tierlist = () => {
             default:
                 return 'Member';
         }
+    };
+
+    // Calculate completion percentage for drafts
+    const calculateCompletion = (draftSongs) => {
+        if (!draftSongs || draftSongs.length === 0) return 0;
+        const placedSongs = draftSongs.filter(song => song.containerId !== 'image-pool').length;
+        return Math.round((placedSongs / draftSongs.length) * 100);
     };
 
     // Auto-save effect
