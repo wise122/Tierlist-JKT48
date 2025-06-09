@@ -10,7 +10,9 @@ import {
     Link,
     Button,
     Chip,
-    Grid
+    Grid,
+    Select,
+    MenuItem
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -25,7 +27,8 @@ const PointHistory = () => {
     const [lastUpdate, setLastUpdate] = useState(null);
     const [error, setError] = useState('');
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
     const navigate = useNavigate();
 
     const loadPointsHistory = () => {
@@ -130,6 +133,7 @@ const PointHistory = () => {
         const categoryData = {};
         const monthlyData = {};
         const yearlyData = {};
+        const availableYears = new Set();
 
         console.log('Processing points data for charts:', pointsData);
 
@@ -186,6 +190,8 @@ const PointHistory = () => {
                 const monthKey = format(startOfMonth(date), 'MMM yyyy');
                 const yearKey = year;
                 
+                availableYears.add(yearKey);
+
                 if (!monthlyData[monthKey]) {
                     monthlyData[monthKey] = 0;
                 }
@@ -205,13 +211,17 @@ const PointHistory = () => {
         console.log('Final yearly data:', yearlyData);
 
         const sortedMonthly = Object.entries(monthlyData)
+            .filter(([month]) => {
+                const year = month.split(' ')[1];
+                return year === selectedYear;
+            })
             .sort((a, b) => {
-                const dateA = new Date(a[0]);
-                const dateB = new Date(b[0]);
+                const dateA = parse(a[0], 'MMM yyyy', new Date());
+                const dateB = parse(b[0], 'MMM yyyy', new Date());
                 return dateA - dateB;
             })
             .map(([month, amount]) => ({
-                month,
+                month: month.split(' ')[0], // Only show month name in chart
                 amount
             }));
 
@@ -236,9 +246,10 @@ const PointHistory = () => {
         return {
             categories,
             monthly: sortedMonthly,
-            yearly: sortedYearly
+            yearly: sortedYearly,
+            availableYears: Array.from(availableYears).sort()
         };
-    }, [pointsData]);
+    }, [pointsData, selectedYear]);
 
     const handleExportCSV = () => {
         if (!pointsData.length) return;
@@ -288,22 +299,47 @@ const PointHistory = () => {
     }));
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <>
+            <Box 
+                sx={{ 
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bgcolor: 'rgba(0, 0, 0, 0.5)',
+                    backdropFilter: 'blur(5px)',
+                    zIndex: 1000,
+                    px: 3,
+                    py: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2
+                }}
+            >
                 <Button
                     startIcon={<ArrowBack />}
                     onClick={() => navigate('/')}
-                    sx={{ mr: 2 }}
+                    sx={{ 
+                        color: 'white',
+                        '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }}
                 >
                     Back
                 </Button>
-                <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+                <Typography variant="h5" component="h1" sx={{ flexGrow: 1, color: 'white' }}>
                     JKT48 Points History
                 </Typography>
                 <Button
                     startIcon={<Refresh />}
                     onClick={loadPointsHistory}
-                    sx={{ mr: 1 }}
+                    sx={{ 
+                        color: 'white',
+                        '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }}
                 >
                     Refresh
                 </Button>
@@ -311,256 +347,302 @@ const PointHistory = () => {
                     startIcon={<Download />}
                     onClick={handleExportCSV}
                     disabled={!pointsData.length}
+                    sx={{ 
+                        color: 'white',
+                        '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        '&.Mui-disabled': {
+                            color: 'rgba(255, 255, 255, 0.3)'
+                        }
+                    }}
                 >
                     Export CSV
                 </Button>
             </Box>
 
-            {lastUpdate && (
-                <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ color: 'white' }}>
-                        Last updated: {format(new Date(lastUpdate), 'dd MMM yyyy HH:mm:ss')}
-                    </Typography>
-                </Box>
-            )}
-
-            {!pointsData.length ? (
-                <>
-                    <Alert severity="info" sx={{ mb: 3 }}>
-                        No points history found. To get started:
-                        <Box sx={{ mt: 2 }}>
-                            <ol style={{ marginTop: 8, marginBottom: 0 }}>
-                                <li>Install the JKT48 Points History Exporter extension</li>
-                                <li>Login to <Link href="https://jkt48.com" target="_blank" rel="noopener">JKT48.com</Link></li>
-                                <li>Go to <Link href="https://jkt48.com/mypage/point-history?lang=id" target="_blank" rel="noopener">Points History page</Link></li>
-                                <li>Click the extension icon and click "Export Points History"</li>
-                                <li>The data will automatically appear on this page</li>
-                            </ol>
-                        </Box>
-                    </Alert>
-                    <Button 
-                        variant="contained" 
-                        onClick={() => {
-                            console.log('[JKT48 App] Manual load button clicked');
-                            loadPointsHistory();
-                        }}
-                        sx={{ mb: 2 }}
-                    >
-                        Manual Load from Storage
-                    </Button>
-                </>
-            ) : (
-                <>
-                    <Box sx={{ mb: 3 }}>
-                        <Paper sx={{ p: 2 }}>
-                            <Box sx={{ 
-                                display: 'flex', 
-                                flexDirection: 'column',
-                                gap: 2
-                            }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Typography variant="h6" sx={{ mr: 2, minWidth: 160 }}>
-                                        Current Points:
-                                    </Typography>
-                                    <Chip 
-                                        label={`${calculateCurrentPoints().toLocaleString()} P`}
-                                        color="primary"
-                                        sx={{ 
-                                            fontSize: '1.2rem',
-                                            padding: '20px 10px',
-                                            backgroundColor: '#ff69b4',
-                                            '& .MuiChip-label': { px: 2 }
-                                        }}
-                                    />
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Typography variant="h6" sx={{ mr: 2, minWidth: 160 }}>
-                                        Total Spend:
-                                    </Typography>
-                                    <Chip 
-                                        label={`${calculateTotalSpend().toLocaleString()} P`}
-                                        color="primary"
-                                        sx={{ 
-                                            fontSize: '1.2rem',
-                                            padding: '20px 10px',
-                                            backgroundColor: '#4CAF50',
-                                            '& .MuiChip-label': { px: 2 }
-                                        }}
-                                    />
-                                </Box>
-                            </Box>
-                        </Paper>
+            <Container maxWidth="lg" sx={{ mt: 10, mb: 4 }}>
+                {lastUpdate && (
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ color: 'white' }}>
+                            Last updated: {format(new Date(lastUpdate), 'dd MMM yyyy HH:mm:ss')}
+                        </Typography>
                     </Box>
+                )}
 
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
-                        <Grid item xs={12} md={6}>
-                            <Paper sx={{ p: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
-                                <Typography variant="h6" gutterBottom>
-                                    Spending by Category
-                                </Typography>
-                                <Box sx={{ flex: 1, position: 'relative' }}>
-                                    <ResponsiveContainer width="100%" height="85%">
-                                        <PieChart>
-                                            <Pie
-                                                data={chartData.categories}
-                                                dataKey="value"
-                                                nameKey="name"
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius={120}
-                                                label={({ name, value }) => `${name}: ${value.toLocaleString()} P`}
-                                                labelLine={true}
-                                            >
-                                                {chartData.categories.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip 
-                                                formatter={(value) => `${value.toLocaleString()} P`}
-                                                labelFormatter={(name) => `Category: ${name}`}
-                                            />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                    <Box sx={{ 
-                                        width: '100%', 
-                                        display: 'flex', 
-                                        justifyContent: 'center',
-                                        mt: 2
-                                    }}>
-                                        {chartData.categories.map((entry, index) => (
-                                            <Box 
-                                                key={entry.name}
-                                                sx={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'center',
-                                                    mx: 1
-                                                }}
-                                            >
-                                                <Box 
-                                                    sx={{ 
-                                                        width: 10, 
-                                                        height: 10, 
-                                                        backgroundColor: COLORS[index % COLORS.length],
-                                                        mr: 1
-                                                    }} 
-                                                />
-                                                <Typography variant="body2">
-                                                    {entry.name}
-                                                </Typography>
-                                            </Box>
-                                        ))}
+                {!pointsData.length ? (
+                    <>
+                        <Alert severity="info" sx={{ mb: 3 }}>
+                            No points history found. To get started:
+                            <Box sx={{ mt: 2 }}>
+                                <ol style={{ marginTop: 8, marginBottom: 0 }}>
+                                    <li>Install the JKT48 Points History Exporter extension</li>
+                                    <li>Login to <Link href="https://jkt48.com" target="_blank" rel="noopener">JKT48.com</Link></li>
+                                    <li>Go to <Link href="https://jkt48.com/mypage/point-history?lang=id" target="_blank" rel="noopener">Points History page</Link></li>
+                                    <li>Click the extension icon and click "Export Points History"</li>
+                                    <li>The data will automatically appear on this page</li>
+                                </ol>
+                            </Box>
+                        </Alert>
+                        <Button 
+                            variant="contained" 
+                            onClick={() => {
+                                console.log('[JKT48 App] Manual load button clicked');
+                                loadPointsHistory();
+                            }}
+                            sx={{ mb: 2 }}
+                        >
+                            Manual Load from Storage
+                        </Button>
+                    </>
+                ) : (
+                    <>
+                        <Box sx={{ mb: 3 }}>
+                            <Paper sx={{ p: 2 }}>
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    flexDirection: 'column',
+                                    gap: 2
+                                }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <Typography variant="h6" sx={{ mr: 2, minWidth: 160 }}>
+                                            Current Points:
+                                        </Typography>
+                                        <Chip 
+                                            label={`${calculateCurrentPoints().toLocaleString()} P`}
+                                            color="primary"
+                                            sx={{ 
+                                                fontSize: '1.2rem',
+                                                padding: '20px 10px',
+                                                backgroundColor: '#ff69b4',
+                                                '& .MuiChip-label': { px: 2 }
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <Typography variant="h6" sx={{ mr: 2, minWidth: 160 }}>
+                                            Total Spend:
+                                        </Typography>
+                                        <Chip 
+                                            label={`${calculateTotalSpend().toLocaleString()} P`}
+                                            color="primary"
+                                            sx={{ 
+                                                fontSize: '1.2rem',
+                                                padding: '20px 10px',
+                                                backgroundColor: '#4CAF50',
+                                                '& .MuiChip-label': { px: 2 }
+                                            }}
+                                        />
                                     </Box>
                                 </Box>
                             </Paper>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Paper sx={{ p: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
-                                <Typography variant="h6" gutterBottom>
-                                    Yearly Spending
-                                </Typography>
-                                <Box sx={{ flex: 1, position: 'relative' }}>
-                                    <ResponsiveContainer width="100%" height="85%">
-                                        <BarChart 
-                                            data={chartData.yearly}
-                                            margin={{ top: 20, right: 30, left: 30, bottom: 5 }}
-                                        >
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="year" />
-                                            <YAxis tickFormatter={(value) => `${(value / 1000)}k`} />
-                                            <Tooltip formatter={(value) => `${value.toLocaleString()} P`} />
-                                            <Bar 
-                                                dataKey="amount" 
-                                                name="Points Spent" 
-                                                fill="#82ca9d"
-                                                label={{ 
-                                                    position: 'top',
-                                                    formatter: (value) => `${(value / 1000)}k`
-                                                }}
-                                            />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </Box>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Paper sx={{ p: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
-                                <Typography variant="h6" gutterBottom>
-                                    Monthly Spending
-                                </Typography>
-                                <Box sx={{ flex: 1, position: 'relative' }}>
-                                    <ResponsiveContainer width="100%" height="85%">
-                                        <BarChart 
-                                            data={chartData.monthly}
-                                            margin={{ top: 20, right: 30, left: 30, bottom: 5 }}
-                                        >
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="month" />
-                                            <YAxis tickFormatter={(value) => `${(value / 1000)}k`} />
-                                            <Tooltip formatter={(value) => `${value.toLocaleString()} P`} />
-                                            <Bar 
-                                                dataKey="amount" 
-                                                name="Points Spent" 
-                                                fill="#8884d8"
-                                                label={{ 
-                                                    position: 'top',
-                                                    formatter: (value) => `${(value / 1000)}k`
-                                                }}
-                                            />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </Box>
-                            </Paper>
-                        </Grid>
-                    </Grid>
+                        </Box>
 
-                    <Paper sx={{ width: '100%', mb: 2 }}>
-                        <DataGrid
-                            rows={rows}
-                            columns={columns}
-                            pageSize={rowsPerPage}
-                            rowsPerPageOptions={[5, 10, 25, 50, 100]}
-                            onPageSizeChange={(newPageSize) => setRowsPerPage(newPageSize)}
-                            pagination
-                            autoHeight
-                            disableSelectionOnClick
-                            sx={{
-                                '& .MuiDataGrid-cell': {
-                                    whiteSpace: 'normal',
-                                    lineHeight: 'normal',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    paddingY: 1
-                                },
-                                '& .MuiDataGrid-row': {
-                                    alignItems: 'center'
-                                },
-                                '& .MuiTablePagination-root': {
-                                    color: 'black'
-                                },
-                                '& .MuiTablePagination-selectLabel': {
-                                    color: 'black'
-                                },
-                                '& .MuiTablePagination-select': {
-                                    color: 'black'
-                                },
-                                '& .MuiTablePagination-displayedRows': {
-                                    color: 'black'
-                                },
-                                '& .MuiSelect-icon': {
-                                    color: 'black'
-                                },
-                                '& .MuiInputBase-root': {
-                                    color: 'black'
-                                },
-                                '& .MuiTablePagination-menuItem': {
-                                    color: 'black'
-                                }
-                            }}
-                        />
-                    </Paper>
-                </>
-            )}
-        </Container>
+                        <Grid container spacing={3} sx={{ mb: 3 }}>
+                            <Grid item xs={12} md={6}>
+                                <Paper sx={{ p: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant="h6" gutterBottom>
+                                        Spending by Category
+                                    </Typography>
+                                    <Box sx={{ flex: 1, position: 'relative' }}>
+                                        <ResponsiveContainer width="100%" height="85%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={chartData.categories}
+                                                    dataKey="value"
+                                                    nameKey="name"
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    outerRadius={100}
+                                                    label={({ name, value }) => `${name}: ${value.toLocaleString()} P`}
+                                                    labelLine={{ strokeWidth: 2, stroke: '#ffffff' }}
+                                                >
+                                                    {chartData.categories.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip 
+                                                    formatter={(value) => `${value.toLocaleString()} P`}
+                                                    labelFormatter={(name) => `Category: ${name}`}
+                                                />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <Box sx={{ 
+                                            width: '100%', 
+                                            display: 'flex', 
+                                            flexWrap: 'wrap',
+                                            justifyContent: 'center',
+                                            gap: 2,
+                                            mt: 2,
+                                            px: 2
+                                        }}>
+                                            {chartData.categories.map((entry, index) => (
+                                                <Box 
+                                                    key={entry.name}
+                                                    sx={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center',
+                                                        minWidth: 'fit-content'
+                                                    }}
+                                                >
+                                                    <Box 
+                                                        sx={{ 
+                                                            width: 16, 
+                                                            height: 16, 
+                                                            backgroundColor: COLORS[index % COLORS.length],
+                                                            mr: 1,
+                                                            flexShrink: 0
+                                                        }} 
+                                                    />
+                                                    <Typography 
+                                                        variant="body2" 
+                                                        sx={{ 
+                                                            whiteSpace: 'nowrap',
+                                                            color: 'text.primary'
+                                                        }}
+                                                    >
+                                                        {entry.name}
+                                                    </Typography>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Paper sx={{ p: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
+                                    <Typography variant="h6" gutterBottom>
+                                        Yearly Spending
+                                    </Typography>
+                                    <Box sx={{ flex: 1, position: 'relative' }}>
+                                        <ResponsiveContainer width="100%" height="85%">
+                                            <BarChart 
+                                                data={chartData.yearly}
+                                                margin={{ top: 20, right: 30, left: 30, bottom: 5 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="year" />
+                                                <YAxis tickFormatter={(value) => `${(value / 1000)}k`} />
+                                                <Tooltip formatter={(value) => `${value.toLocaleString()} P`} />
+                                                <Bar 
+                                                    dataKey="amount" 
+                                                    name="Points Spent" 
+                                                    fill="#82ca9d"
+                                                    label={{ 
+                                                        position: 'top',
+                                                        formatter: (value) => `${(value / 1000)}k`
+                                                    }}
+                                                />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Paper sx={{ p: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                                            Monthly Spending
+                                        </Typography>
+                                        <Box sx={{ minWidth: 120, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Typography variant="body1" sx={{ color: 'black' }}>
+                                                Year:
+                                            </Typography>
+                                            <Select
+                                                value={selectedYear}
+                                                onChange={(e) => setSelectedYear(e.target.value)}
+                                                size="small"
+                                                sx={{ color: 'black' }}
+                                            >
+                                                {chartData.availableYears.map((year) => (
+                                                    <MenuItem key={year} value={year}>
+                                                        {year}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ flex: 1, position: 'relative' }}>
+                                        <ResponsiveContainer width="100%" height="85%">
+                                            <BarChart 
+                                                data={chartData.monthly}
+                                                margin={{ top: 20, right: 30, left: 30, bottom: 5 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis dataKey="month" />
+                                                <YAxis tickFormatter={(value) => `${(value / 1000)}k`} />
+                                                <Tooltip formatter={(value) => `${value.toLocaleString()} P`} />
+                                                <Bar 
+                                                    dataKey="amount" 
+                                                    name="Points Spent" 
+                                                    fill="#8884d8"
+                                                    label={{ 
+                                                        position: 'top',
+                                                        formatter: (value) => `${(value / 1000)}k`
+                                                    }}
+                                                />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+
+                        <Paper sx={{ width: '100%', mb: 2 }}>
+                            <DataGrid
+                                rows={rows}
+                                columns={columns}
+                                pageSizeOptions={[5, 10, 25, 50, 100]}
+                                initialState={{
+                                    pagination: {
+                                        paginationModel: {
+                                            pageSize: 10,
+                                            page: 0
+                                        },
+                                    },
+                                }}
+                                pagination
+                                autoHeight
+                                disableSelectionOnClick
+                                sx={{
+                                    '& .MuiDataGrid-cell': {
+                                        whiteSpace: 'normal',
+                                        lineHeight: 'normal',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        paddingY: 1
+                                    },
+                                    '& .MuiDataGrid-row': {
+                                        alignItems: 'center'
+                                    },
+                                    '& .MuiTablePagination-root': {
+                                        color: 'black'
+                                    },
+                                    '& .MuiTablePagination-selectLabel': {
+                                        color: 'black'
+                                    },
+                                    '& .MuiTablePagination-select': {
+                                        color: 'black'
+                                    },
+                                    '& .MuiTablePagination-displayedRows': {
+                                        color: 'black'
+                                    },
+                                    '& .MuiSelect-icon': {
+                                        color: 'black'
+                                    },
+                                    '& .MuiInputBase-root': {
+                                        color: 'black'
+                                    },
+                                    '& .MuiTablePagination-menuItem': {
+                                        color: 'black'
+                                    }
+                                }}
+                            />
+                        </Paper>
+                    </>
+                )}
+            </Container>
+        </>
     );
 };
 
