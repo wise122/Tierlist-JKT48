@@ -19,8 +19,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { ArrowBack, Download, Refresh } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format, parse, startOfMonth } from 'date-fns';
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+import { POINT_HISTORY_COLORS, POINT_HISTORY_CATEGORIES } from './data/PointHistoryData';
 
 const PointHistory = () => {
     const [pointsData, setPointsData] = useState([]);
@@ -124,8 +123,43 @@ const PointHistory = () => {
 
     const calculateTotalSpend = () => {
         return pointsData.reduce((total, row) => {
+            if (row.purpose.trim() === 'Masa Berlaku Habis') return total;
             const points = parseInt(row.buyPoints?.replace(/[P,]/g, '').trim()) || 0;
             return total + (points < 0 ? Math.abs(points) : 0);
+        }, 0);
+    };
+
+    const calculateTotalTopup = () => {
+        console.log('Calculating total topup...');
+        console.log('Total rows in pointsData:', pointsData.length);
+        
+        return pointsData.reduce((total, row) => {
+            const purpose = (row.purpose || '').trim().toUpperCase();
+            const points = parseInt(row.buyPoints?.replace(/[P,]/g, '').trim()) || 0;
+            console.log('Processing row:', { 
+                originalPurpose: row.purpose,
+                normalizedPurpose: purpose,
+                points,
+                buyPointsRaw: row.buyPoints 
+            });
+            
+            if (purpose === 'JKT48 POINTS' && points > 0) {
+                console.log('Found topup:', points);
+                return total + points;
+            }
+            return total;
+        }, 0);
+    };
+
+    const calculateTotalExpired = () => {
+        return pointsData.reduce((total, row) => {
+            const purpose = (row.purpose || '').trim().toUpperCase();
+            const points = parseInt(row.buyPoints?.replace(/[P,]/g, '').trim()) || 0;
+            
+            if (purpose === 'MASA BERLAKU HABIS') {
+                return total + Math.abs(points);
+            }
+            return total;
         }, 0);
     };
 
@@ -135,11 +169,22 @@ const PointHistory = () => {
         const yearlyData = {};
         const availableYears = new Set();
 
+        // Define all months
+        const allMonths = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+
+        // Initialize monthly data with zero values for all months
+        allMonths.forEach(month => {
+            monthlyData[`${month} ${selectedYear}`] = 0;
+        });
+
         console.log('Processing points data for charts:', pointsData);
 
         pointsData.forEach(row => {
-            if (row.purpose.trim() === 'JKT48 POINTS') {
-                console.log('Skipping topup:', row);
+            if (row.purpose.trim() === 'JKT48 POINTS' || row.purpose.trim() === 'Masa Berlaku Habis') {
+                console.log('Skipping topup or expired points:', row);
                 return;
             }
 
@@ -154,10 +199,12 @@ const PointHistory = () => {
             const purpose = row.purpose.toLowerCase().trim();
             console.log('Processing purpose:', purpose);
 
-            if (purpose === 'tiket teater') {
-                category = 'Theater Ticket';
-            } else if (purpose === 'video call') {
-                category = 'Video Call';
+            // Find matching category based on keywords
+            for (const [categoryKey, categoryData] of Object.entries(POINT_HISTORY_CATEGORIES)) {
+                if (categoryData.keywords.some(keyword => purpose.includes(keyword.toLowerCase()))) {
+                    category = categoryKey;
+                    break;
+                }
             }
 
             console.log('Detected category:', category, 'for purpose:', purpose);
@@ -192,10 +239,9 @@ const PointHistory = () => {
                 
                 availableYears.add(yearKey);
 
-                if (!monthlyData[monthKey]) {
-                    monthlyData[monthKey] = 0;
+                if (yearKey === selectedYear) {
+                    monthlyData[monthKey] = (monthlyData[monthKey] || 0) + spendingAmount;
                 }
-                monthlyData[monthKey] += spendingAmount;
 
                 if (!yearlyData[yearKey]) {
                     yearlyData[yearKey] = 0;
@@ -210,20 +256,11 @@ const PointHistory = () => {
         console.log('Final monthly data:', monthlyData);
         console.log('Final yearly data:', yearlyData);
 
-        const sortedMonthly = Object.entries(monthlyData)
-            .filter(([month]) => {
-                const year = month.split(' ')[1];
-                return year === selectedYear;
-            })
-            .sort((a, b) => {
-                const dateA = parse(a[0], 'MMM yyyy', new Date());
-                const dateB = parse(b[0], 'MMM yyyy', new Date());
-                return dateA - dateB;
-            })
-            .map(([month, amount]) => ({
-                month: month.split(' ')[0], // Only show month name in chart
-                amount
-            }));
+        // Convert monthly data to array format with all months
+        const sortedMonthly = allMonths.map(month => ({
+            month,
+            amount: monthlyData[`${month} ${selectedYear}`] || 0
+        }));
 
         const sortedYearly = Object.entries(yearlyData)
             .sort((a, b) => a[0].localeCompare(b[0]))
@@ -281,11 +318,12 @@ const PointHistory = () => {
     const columns = [
         { field: 'id', headerName: 'No. Transaction', flex: 1.2 },
         { field: 'date', headerName: 'Date', flex: 1 },
-        { field: 'purpose', headerName: 'Purpose', flex: 1.5 },
+        { field: 'purpose', headerName: 'Category', flex: 1.5 },
         { field: 'quantity', headerName: 'Quantity', flex: 0.7 },
         { field: 'bonusPoints', headerName: 'Bonus Points', flex: 1 },
-        { field: 'buyPoints', headerName: 'Buy Points', flex: 1 },
+        { field: 'buyPoints', headerName: 'Points Changed', flex: 1 },
         { field: 'status', headerName: 'Status', flex: 0.7 }
+        
     ];
 
     const rows = pointsData.map(row => ({
@@ -400,12 +438,15 @@ const PointHistory = () => {
                         <Box sx={{ mb: 3 }}>
                             <Paper sx={{ p: 2 }}>
                                 <Box sx={{ 
-                                    display: 'flex', 
-                                    flexDirection: 'column',
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(2, 1fr)',
                                     gap: 2
                                 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <Typography variant="h6" sx={{ mr: 2, minWidth: 160 }}>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center',
+                                    }}>
+                                        <Typography variant="h6" sx={{ mr: 2, width: 160, flexShrink: 0 }}>
                                             Current Points:
                                         </Typography>
                                         <Chip 
@@ -419,8 +460,29 @@ const PointHistory = () => {
                                             }}
                                         />
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <Typography variant="h6" sx={{ mr: 2, minWidth: 160 }}>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center',
+                                    }}>
+                                        <Typography variant="h6" sx={{ mr: 2, width: 160, flexShrink: 0 }}>
+                                            Total Topup:
+                                        </Typography>
+                                        <Chip 
+                                            label={`${calculateTotalTopup().toLocaleString()} P`}
+                                            color="primary"
+                                            sx={{ 
+                                                fontSize: '1.2rem',
+                                                padding: '20px 10px',
+                                                backgroundColor: '#2196F3',
+                                                '& .MuiChip-label': { px: 2 }
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center',
+                                    }}>
+                                        <Typography variant="h6" sx={{ mr: 2, width: 160, flexShrink: 0 }}>
                                             Total Spend:
                                         </Typography>
                                         <Chip 
@@ -430,6 +492,24 @@ const PointHistory = () => {
                                                 fontSize: '1.2rem',
                                                 padding: '20px 10px',
                                                 backgroundColor: '#4CAF50',
+                                                '& .MuiChip-label': { px: 2 }
+                                            }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center',
+                                    }}>
+                                        <Typography variant="h6" sx={{ mr: 2, width: 160, flexShrink: 0 }}>
+                                            Total Expired:
+                                        </Typography>
+                                        <Chip 
+                                            label={`${calculateTotalExpired().toLocaleString()} P`}
+                                            color="primary"
+                                            sx={{ 
+                                                fontSize: '1.2rem',
+                                                padding: '20px 10px',
+                                                backgroundColor: '#F44336',
                                                 '& .MuiChip-label': { px: 2 }
                                             }}
                                         />
@@ -444,64 +524,82 @@ const PointHistory = () => {
                                     <Typography variant="h6" gutterBottom>
                                         Spending by Category
                                     </Typography>
-                                    <Box sx={{ flex: 1, position: 'relative' }}>
-                                        <ResponsiveContainer width="100%" height="85%">
-                                            <PieChart>
-                                                <Pie
-                                                    data={chartData.categories}
-                                                    dataKey="value"
-                                                    nameKey="name"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    outerRadius={100}
-                                                    label={({ name, value }) => `${name}: ${value.toLocaleString()} P`}
-                                                    labelLine={{ strokeWidth: 2, stroke: '#ffffff' }}
-                                                >
-                                                    {chartData.categories.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip 
-                                                    formatter={(value) => `${value.toLocaleString()} P`}
-                                                    labelFormatter={(name) => `Category: ${name}`}
-                                                />
-                                            </PieChart>
-                                        </ResponsiveContainer>
+                                    <Box sx={{ 
+                                        flex: 1, 
+                                        position: 'relative',
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}>
+                                        <Box sx={{ width: '50%', height: '100%' }}>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        data={chartData.categories}
+                                                        dataKey="value"
+                                                        nameKey="name"
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        outerRadius={80}
+                                                    >
+                                                        {chartData.categories.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={POINT_HISTORY_COLORS[index % POINT_HISTORY_COLORS.length]} />
+                                                        ))}
+                                                    </Pie>
+                                                    <Tooltip 
+                                                        formatter={(value) => `${value.toLocaleString()} P`}
+                                                        labelFormatter={(name) => `Category: ${name}`}
+                                                    />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        </Box>
                                         <Box sx={{ 
-                                            width: '100%', 
-                                            display: 'flex', 
-                                            flexWrap: 'wrap',
-                                            justifyContent: 'center',
+                                            width: '50%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
                                             gap: 2,
-                                            mt: 2,
-                                            px: 2
+                                            overflowY: 'auto',
+                                            height: '100%',
+                                            pr: 1
                                         }}>
                                             {chartData.categories.map((entry, index) => (
                                                 <Box 
                                                     key={entry.name}
                                                     sx={{ 
                                                         display: 'flex', 
-                                                        alignItems: 'center',
-                                                        minWidth: 'fit-content'
+                                                        flexDirection: 'column',
+                                                        gap: 0.5
                                                     }}
                                                 >
-                                                    <Box 
-                                                        sx={{ 
-                                                            width: 16, 
-                                                            height: 16, 
-                                                            backgroundColor: COLORS[index % COLORS.length],
-                                                            mr: 1,
-                                                            flexShrink: 0
-                                                        }} 
-                                                    />
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Box 
+                                                            sx={{ 
+                                                                width: 16, 
+                                                                height: 16, 
+                                                                backgroundColor: POINT_HISTORY_COLORS[index % POINT_HISTORY_COLORS.length],
+                                                                flexShrink: 0,
+                                                                borderRadius: '4px'
+                                                            }} 
+                                                        />
+                                                        <Typography 
+                                                            variant="subtitle1" 
+                                                            sx={{ 
+                                                                fontWeight: 'bold',
+                                                                color: 'text.primary'
+                                                            }}
+                                                        >
+                                                            {entry.name}
+                                                        </Typography>
+                                                    </Box>
                                                     <Typography 
-                                                        variant="body2" 
+                                                        variant="body1" 
                                                         sx={{ 
-                                                            whiteSpace: 'nowrap',
-                                                            color: 'text.primary'
+                                                            pl: 3.5,
+                                                            color: 'text.secondary'
                                                         }}
                                                     >
-                                                        {entry.name}
+                                                        {entry.value.toLocaleString()} P
                                                     </Typography>
                                                 </Box>
                                             ))}
