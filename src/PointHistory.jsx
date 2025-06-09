@@ -35,14 +35,22 @@ const PointHistory = () => {
             console.log('[JKT48 App] Raw data from localStorage:', savedData);
             
             if (savedData) {
-                const parsedData = JSON.parse(savedData);
-                console.log('[JKT48 App] Parsed data:', parsedData);
-                
-                setPointsData(parsedData.data || []);
-                setLastUpdate(parsedData.timestamp);
-                setError('');
-                
-                console.log('[JKT48 App] Data loaded successfully');
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    console.log('[JKT48 App] Parsed data:', parsedData);
+                    
+                    if (parsedData && parsedData.data) {
+                        setPointsData(parsedData.data);
+                        setLastUpdate(parsedData.timestamp);
+                        setError('');
+                        console.log('[JKT48 App] Data loaded successfully');
+                    } else {
+                        throw new Error('Invalid data format');
+                    }
+                } catch (parseError) {
+                    console.error('[JKT48 App] Error parsing data:', parseError);
+                    setError('Error parsing points history. Please try exporting the data again.');
+                }
             } else {
                 console.log('[JKT48 App] No data found in localStorage');
                 setError('No points history found. Please use the Chrome extension to save your points history first.');
@@ -59,20 +67,29 @@ const PointHistory = () => {
 
         const handleUpdate = (event) => {
             console.log('[JKT48 App] Received update event:', event);
-            loadPointsHistory();
+            if (event.detail) {
+                console.log('[JKT48 App] Update event contains data:', event.detail);
+                setPointsData(event.detail.data || []);
+                setLastUpdate(event.detail.timestamp);
+                setError('');
+            } else {
+                loadPointsHistory();
+            }
+        };
+
+        const handleStorageChange = (e) => {
+            console.log('[JKT48 App] Storage event:', e);
+            if (e.key === 'jkt48_points_history') {
+                loadPointsHistory();
+            }
         };
 
         window.addEventListener('JKT48_POINTS_HISTORY_UPDATED', handleUpdate);
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'jkt48_points_history') {
-                console.log('[JKT48 App] Storage event detected:', e);
-                loadPointsHistory();
-            }
-        });
+        window.addEventListener('storage', handleStorageChange);
 
         return () => {
             window.removeEventListener('JKT48_POINTS_HISTORY_UPDATED', handleUpdate);
-            window.removeEventListener('storage', handleUpdate);
+            window.removeEventListener('storage', handleStorageChange);
         };
     }, []);
 

@@ -7,7 +7,8 @@
   "host_permissions": [
     "https://jkt48.com/*",
     "http://localhost:*/*",
-    "https://*.vercel.app/*"
+    "https://*.vercel.app/*",
+    "https://tierlistjkt48.my.id/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -22,7 +23,8 @@
       "matches": [
         "https://jkt48.com/mypage/point-history*",
         "http://localhost:*/*",
-        "https://*.vercel.app/*"
+        "https://*.vercel.app/*",
+        "https://tierlistjkt48.my.id/*"
       ],
       "js": ["content.js"]
     }
