@@ -3,38 +3,33 @@
 
 console.log('[JKT48 Extension] Content script loaded');
 
+// Inject a script tag to expose window.jkt48PointsHistory
+function injectData(data) {
+  const script = document.createElement('script');
+  script.textContent = `
+    window.jkt48PointsHistory = ${JSON.stringify(data)};
+    window.dispatchEvent(new CustomEvent('JKT48_POINTS_HISTORY_UPDATED', {
+      detail: window.jkt48PointsHistory
+    }));
+  `;
+  document.head.appendChild(script);
+}
+
 // Listen for messages from the extension popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[JKT48 Extension] Received message:', message);
   
   if (message.type === 'POINTS_HISTORY_UPDATED' && message.data) {
-    console.log('[JKT48 Extension] Saving data to localStorage:', message.data);
+    console.log('[JKT48 Extension] Saving data:', message.data);
     
     try {
-      // Store in localStorage for the webpage to access
-      const dataToStore = JSON.stringify(message.data);
-      localStorage.setItem('jkt48_points_history', dataToStore);
+      // Inject the data into the page
+      injectData(message.data);
       
-      // Also store in chrome.storage for persistence
-      chrome.storage.local.set({ 'jkt48_points_history': message.data }, () => {
-        console.log('[JKT48 Extension] Data saved to chrome.storage');
-      });
+      // Also save to localStorage as backup
+      localStorage.setItem('jkt48_points_history', JSON.stringify(message.data));
       
-      // Dispatch an event to notify the webpage
-      const event = new CustomEvent('JKT48_POINTS_HISTORY_UPDATED', {
-        detail: message.data
-      });
-      window.dispatchEvent(event);
-      
-      // Broadcast to other tabs via storage event
-      const storageEvent = new StorageEvent('storage', {
-        key: 'jkt48_points_history',
-        newValue: dataToStore,
-        url: window.location.href
-      });
-      window.dispatchEvent(storageEvent);
-      
-      console.log('[JKT48 Extension] Data saved and events dispatched');
+      console.log('[JKT48 Extension] Data saved and injected');
       sendResponse({ success: true });
     } catch (error) {
       console.error('[JKT48 Extension] Error saving data:', error);

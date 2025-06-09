@@ -31,6 +31,16 @@ const PointHistory = () => {
     const loadPointsHistory = () => {
         console.log('[JKT48 App] Attempting to load points history');
         try {
+            // First try to get data from window object
+            if (window.jkt48PointsHistory) {
+                console.log('[JKT48 App] Found data in window object:', window.jkt48PointsHistory);
+                setPointsData(window.jkt48PointsHistory.data || []);
+                setLastUpdate(window.jkt48PointsHistory.timestamp);
+                setError('');
+                return;
+            }
+
+            // Fallback to localStorage
             const savedData = localStorage.getItem('jkt48_points_history');
             console.log('[JKT48 App] Raw data from localStorage:', savedData);
             
@@ -43,6 +53,8 @@ const PointHistory = () => {
                         setPointsData(parsedData.data);
                         setLastUpdate(parsedData.timestamp);
                         setError('');
+                        // Also set to window object for future use
+                        window.jkt48PointsHistory = parsedData;
                         console.log('[JKT48 App] Data loaded successfully');
                     } else {
                         throw new Error('Invalid data format');
@@ -52,7 +64,7 @@ const PointHistory = () => {
                     setError('Error parsing points history. Please try exporting the data again.');
                 }
             } else {
-                console.log('[JKT48 App] No data found in localStorage');
+                console.log('[JKT48 App] No data found');
                 setError('No points history found. Please use the Chrome extension to save your points history first.');
             }
         } catch (error) {

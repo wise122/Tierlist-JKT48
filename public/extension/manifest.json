@@ -3,7 +3,7 @@
   "name": "JKT48 Points History Exporter",
   "version": "1.0",
   "description": "Export JKT48 Points History to CSV",
-  "permissions": ["activeTab", "scripting", "tabs"],
+  "permissions": ["activeTab", "scripting", "tabs", "storage"],
   "host_permissions": [
     "https://jkt48.com/*",
     "http://localhost:*/*",
