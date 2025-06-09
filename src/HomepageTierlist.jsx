@@ -166,18 +166,18 @@ const Homepage = () => {
             <h1 className="title">JKT48 Tierlist</h1>
             <div className="dropdown-container">
                 <div className="dropdown-row">
-                    <select 
-                        value={tierlistType} 
-                        onChange={handleTierlistTypeChange}
-                        className="member-dropdown"
-                    >
-                        <option value="">-- Select Tierlist Type --</option>
-                        <option value="member">Member Tierlist</option>
-                        <option value="setlist">Setlist Tierlist</option>
-                        <option value="ramadan">Special Show Ramadan</option>
-                        <option value="video">SPV and MV</option>
-                        <option value="setlist_song">Setlist's Song</option>
-                    </select>
+                <select 
+                    value={tierlistType} 
+                    onChange={handleTierlistTypeChange}
+                    className="member-dropdown"
+                >
+                    <option value="">-- Select Tierlist Type --</option>
+                    <option value="member">Member Tierlist</option>
+                    <option value="setlist">Setlist Tierlist</option>
+                    <option value="ramadan">Special Show Ramadan</option>
+                    <option value="video">SPV and MV</option>
+                    <option value="setlist_song">Setlist's Song</option>
+                </select>
 
                     {drafts.length > 0 && (
                         <select

@@ -7,6 +7,7 @@ import Tierlist from './Tierlist'
 import TierlistLagu from './Tierlist_Lagu'
 import HomepageTierlist from './HomepageTierlist'
 import Calculator from './Calculator'
+import PointHistory from './PointHistory'
 import NotFound from './components/NotFound'
 import Footer from './components/Footer'
 import ViewportManager from './components/ViewportManager'
@@ -29,6 +30,7 @@ function App() {
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/tierlist" element={<Tierlist />} />
             <Route path="/tierlist_lagu" element={<TierlistLagu />} />
+            <Route path="/point-history" element={<PointHistory />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>

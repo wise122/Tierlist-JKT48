@@ -403,10 +403,10 @@ const Tierlist = () => {
         // Load songs for the selected setlist
         const songList = setlistSongs[setlistName].map((songName, index) => ({
             id: `song-${songName}`,
-            name: songName,
-            containerId: 'image-pool',
-            originalIndex: index
-        }));
+                name: songName,
+                containerId: 'image-pool',
+                originalIndex: index
+            }));
         console.log('Initial song list:', songList);
 
         // First set the initial song list

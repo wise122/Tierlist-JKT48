@@ -557,26 +557,26 @@ const Calculator = () => {
                 {/* Fixed Header */}
                 <AppBar position="fixed" sx={{ bgcolor: '#323342', borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}>
                     <Box sx={{ position: 'relative' }}>
-                        <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
-                            <IconButton
-                                edge="start"
-                                color="inherit"
-                                onClick={() => navigate('/')}
-                                sx={{ mr: 2 }}
-                            >
-                                <ArrowBackIcon />
-                            </IconButton>
-                            <img 
-                                src={calculatorLogo} 
-                                alt="Calculator Logo" 
-                                style={{ 
-                                    height: '40px',
-                                    marginRight: '12px'
-                                }} 
-                            />
+                    <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
+                        <IconButton
+                            edge="start"
+                            color="inherit"
+                            onClick={() => navigate('/')}
+                            sx={{ mr: 2 }}
+                        >
+                            <ArrowBackIcon />
+                        </IconButton>
+                        <img 
+                            src={calculatorLogo} 
+                            alt="Calculator Logo" 
+                            style={{ 
+                                height: '40px',
+                                marginRight: '12px'
+                            }} 
+                        />
                             <Typography variant="h6" component="div">
-                                JKT48 Wishlist Calculator
-                            </Typography>
+                            JKT48 Wishlist Calculator
+                        </Typography>
                             {calculatorTitle && (
                                 <Box 
                                     sx={{ 
@@ -601,7 +601,7 @@ const Calculator = () => {
                                     </Typography>
                                 </Box>
                             )}
-                        </Toolbar>
+                    </Toolbar>
                     </Box>
                 </AppBar>
 
@@ -826,9 +826,9 @@ const Calculator = () => {
                                         </Button>
                                     </Box>
                                     <Box sx={{ textAlign: 'right' }}>
-                                        <Typography variant="h6" className="total-amount" sx={{ color: 'white' }}>
-                                            Total: {formatPrice(calculateTotal())}
-                                        </Typography>
+                                    <Typography variant="h6" className="total-amount" sx={{ color: 'white' }}>
+                                        Total: {formatPrice(calculateTotal())}
+                                    </Typography>
                                         <Typography variant="subtitle1" sx={{ color: '#4CAF50', mt: 1 }}>
                                             Total Terbeli: {formatPrice(calculateTotal(true))}
                                         </Typography>

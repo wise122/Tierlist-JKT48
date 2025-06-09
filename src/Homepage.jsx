@@ -36,6 +36,12 @@ const Homepage = () => {
                 >
                     Wishlist Calculator
                 </button>
+                <button 
+                    className="nav-button"
+                    onClick={() => navigate('/point-history')}
+                >
+                    Points History
+                </button>
             </div>
         </div>
     );

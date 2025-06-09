@@ -271,3 +271,48 @@
 .MuiSwitch-root {
     margin-right: 1rem !important;
 }
+
+.song-image {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 5px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: grab;
+    transition: transform 0.2s;
+}
+
+.song-image.dragging {
+    opacity: 0.3;
+}
+
+.song-image.overlay {
+    cursor: grabbing;
+}
+
+.song-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: blur(4px) brightness(0.7);
+    object-fit: cover;
+}
+
+.song-name {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    text-align: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 1;
+    word-wrap: break-word;
+    padding: 5px;
+}
