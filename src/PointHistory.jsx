@@ -30,49 +30,85 @@ const PointHistory = () => {
 
     const loadPointsHistory = () => {
         console.log('[JKT48 App] Attempting to load points history');
+        console.log('[JKT48 App] Current URL:', window.location.href);
+        console.log('[JKT48 App] Checking localStorage availability:', !!window.localStorage);
+        
         try {
+            // Try to access localStorage
+            const testKey = '__test__';
+            localStorage.setItem(testKey, testKey);
+            localStorage.removeItem(testKey);
+            
             const savedData = localStorage.getItem('jkt48_points_history');
             console.log('[JKT48 App] Raw data from localStorage:', savedData);
             
             if (savedData) {
-                const parsedData = JSON.parse(savedData);
-                console.log('[JKT48 App] Parsed data:', parsedData);
-                
-                setPointsData(parsedData.data || []);
-                setLastUpdate(parsedData.timestamp);
-                setError('');
-                
-                console.log('[JKT48 App] Data loaded successfully');
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    console.log('[JKT48 App] Parsed data:', parsedData);
+                    
+                    if (!parsedData.data || !Array.isArray(parsedData.data)) {
+                        console.error('[JKT48 App] Invalid data structure:', parsedData);
+                        setError('Invalid data structure in storage');
+                        return;
+                    }
+                    
+                    setPointsData(parsedData.data || []);
+                    setLastUpdate(parsedData.timestamp);
+                    setError('');
+                    
+                    console.log('[JKT48 App] Data loaded successfully');
+                } catch (parseError) {
+                    console.error('[JKT48 App] Error parsing data:', parseError);
+                    setError('Error parsing stored data: ' + parseError.message);
+                }
             } else {
                 console.log('[JKT48 App] No data found in localStorage');
                 setError('No points history found. Please use the Chrome extension to save your points history first.');
             }
         } catch (error) {
-            console.error('[JKT48 App] Error loading points history:', error);
-            setError('Error loading points history: ' + error.message);
+            console.error('[JKT48 App] Error accessing localStorage:', error);
+            setError('Error accessing localStorage: ' + error.message);
         }
     };
 
     useEffect(() => {
         console.log('[JKT48 App] Component mounted');
+        
+        // Immediate load attempt
         loadPointsHistory();
 
+        // Set up event listeners
         const handleUpdate = (event) => {
             console.log('[JKT48 App] Received update event:', event);
             loadPointsHistory();
         };
 
-        window.addEventListener('JKT48_POINTS_HISTORY_UPDATED', handleUpdate);
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'jkt48_points_history') {
-                console.log('[JKT48 App] Storage event detected:', e);
+        const handleStorageChange = (e) => {
+            console.log('[JKT48 App] Storage event detected:', e);
+            if (e.key === 'jkt48_points_history' || e.key === null) {
+                console.log('[JKT48 App] Points history storage changed');
                 loadPointsHistory();
             }
-        });
+        };
+
+        // Add event listeners
+        window.addEventListener('JKT48_POINTS_HISTORY_UPDATED', handleUpdate);
+        window.addEventListener('storage', handleStorageChange);
+
+        // Check localStorage every 2 seconds for changes
+        const intervalId = setInterval(() => {
+            const currentData = localStorage.getItem('jkt48_points_history');
+            if (currentData && (!pointsData || pointsData.length === 0)) {
+                console.log('[JKT48 App] Found data in periodic check');
+                loadPointsHistory();
+            }
+        }, 2000);
 
         return () => {
             window.removeEventListener('JKT48_POINTS_HISTORY_UPDATED', handleUpdate);
-            window.removeEventListener('storage', handleUpdate);
+            window.removeEventListener('storage', handleStorageChange);
+            clearInterval(intervalId);
         };
     }, []);
 
@@ -289,18 +325,30 @@ const PointHistory = () => {
             )}
 
             {!pointsData.length ? (
-                <Alert severity="info" sx={{ mb: 3 }}>
-                    No points history found. To get started:
-                    <Box sx={{ mt: 2 }}>
-                        <ol style={{ marginTop: 8, marginBottom: 0 }}>
-                            <li>Install the JKT48 Points History Exporter extension</li>
-                            <li>Login to <Link href="https://jkt48.com" target="_blank" rel="noopener">JKT48.com</Link></li>
-                            <li>Go to <Link href="https://jkt48.com/mypage/point-history?lang=id" target="_blank" rel="noopener">Points History page</Link></li>
-                            <li>Click the extension icon and click "Export Points History"</li>
-                            <li>The data will automatically appear on this page</li>
-                        </ol>
-                    </Box>
-                </Alert>
+                <>
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                        No points history found. To get started:
+                        <Box sx={{ mt: 2 }}>
+                            <ol style={{ marginTop: 8, marginBottom: 0 }}>
+                                <li>Install the JKT48 Points History Exporter extension</li>
+                                <li>Login to <Link href="https://jkt48.com" target="_blank" rel="noopener">JKT48.com</Link></li>
+                                <li>Go to <Link href="https://jkt48.com/mypage/point-history?lang=id" target="_blank" rel="noopener">Points History page</Link></li>
+                                <li>Click the extension icon and click "Export Points History"</li>
+                                <li>The data will automatically appear on this page</li>
+                            </ol>
+                        </Box>
+                    </Alert>
+                    <Button 
+                        variant="contained" 
+                        onClick={() => {
+                            console.log('[JKT48 App] Manual load button clicked');
+                            loadPointsHistory();
+                        }}
+                        sx={{ mb: 2 }}
+                    >
+                        Manual Load from Storage
+                    </Button>
+                </>
             ) : (
                 <>
                     <Box sx={{ mb: 3 }}>
