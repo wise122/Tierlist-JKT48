@@ -274,7 +274,8 @@ const PointHistory = () => {
             .map(([name, value]) => ({
                 name,
                 value
-            }));
+            }))
+            .sort((a, b) => b.value - a.value);
 
         console.log('Processed categories:', categories);
         console.log('Processed monthly data:', sortedMonthly);
