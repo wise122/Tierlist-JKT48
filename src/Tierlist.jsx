@@ -229,12 +229,19 @@ const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContex
         border: isSelected ? '2px solid #4CAF50' : 'none'
     };
 
+    const handleContextMenu = (e) => {
+        e.preventDefault(); // Prevent default context menu
+        if (isDragMode && image.containerId !== 'image-pool') {
+            onContextMenu && onContextMenu(e, image);
+        }
+    };
+
     return (
         <div
             className={`member-image ${isDragging ? 'dragging' : ''} ${dragOverlay ? 'overlay' : ''}`}
             style={style}
             onClick={() => !isDragMode && onImageClick && onImageClick(image)}
-            onContextMenu={(e) => onContextMenu && onContextMenu(e, image)}
+            onContextMenu={handleContextMenu}
         >
             <img src={image.src} alt={image.name} />
             <div className="member-name">{image.name}</div>
@@ -621,14 +628,28 @@ const Tierlist = () => {
     };
 
     const handleDragOver = (event) => {
-        if (!isDragMode) return;  // Add this line to prevent drag in click mode
+        if (!isDragMode) return;
         const { active, over } = event;
         if (!over) return;
         
         const overId = over.id;
         
+        // If we're over another image
+        if (images.find(img => img.id === overId)) {
+            const activeImage = images.find(img => img.id === active.id);
+            const overImage = images.find(img => img.id === overId);
+            
+            // If they're in the same container
+            if (activeImage.containerId === overImage.containerId) {
+                setImages(prev => {
+                    const activeIndex = prev.findIndex(img => img.id === active.id);
+                    const overIndex = prev.findIndex(img => img.id === overId);
+                    return arrayMove(prev, activeIndex, overIndex);
+                });
+            }
+        }
         // If we're over a droppable container
-        if (rows.find(row => row.id === overId) || overId === 'image-pool') {
+        else if (rows.find(row => row.id === overId) || overId === 'image-pool') {
             setImages(prev => {
                 const activeImage = prev.find(img => img.id === active.id);
                 if (activeImage.containerId === overId) return prev; // No change if same container
@@ -670,11 +691,26 @@ const Tierlist = () => {
         }
 
         const overId = over.id;
-        const activeImage = images.find(img => img.id === active.id);
-        const overContainer = overId;
         
-        // Check if moving to a different container
-        if (rows.find(row => row.id === overId) || overId === 'image-pool') {
+        // If we're over another image
+        if (images.find(img => img.id === overId)) {
+            const activeImage = images.find(img => img.id === active.id);
+            const overImage = images.find(img => img.id === overId);
+            
+            // If they're in the same container
+            if (activeImage.containerId === overImage.containerId) {
+                setImages(prev => {
+                    const activeIndex = prev.findIndex(img => img.id === active.id);
+                    const overIndex = prev.findIndex(img => img.id === overId);
+                    return arrayMove(prev, activeIndex, overIndex);
+                });
+            }
+        }
+        // If we're over a droppable container
+        else if (rows.find(row => row.id === overId) || overId === 'image-pool') {
+            const activeImage = images.find(img => img.id === active.id);
+            const overContainer = overId;
+            
             setImages(prev => {
                 // Remove the dragged image from its current position
                 const newImages = prev.filter(img => img.id !== active.id);
@@ -1063,7 +1099,15 @@ const Tierlist = () => {
 
     const handleImageRightClick = (e, image) => {
         e.preventDefault(); // Prevent the default context menu
-        if (!isDragMode) {
+        if (isDragMode) {
+            if (image.containerId !== 'image-pool') {
+                setImages(prev => prev.map(img => 
+                    img.id === image.id 
+                        ? { ...img, containerId: 'image-pool' }
+                        : img
+                ));
+            }
+        } else {
             if (image.containerId !== 'image-pool') {
                 setImages(prev => prev.map(img => 
                     img.id === image.id 
