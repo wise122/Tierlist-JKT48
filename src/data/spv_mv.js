@@ -57,5 +57,5 @@ export const spvFiles = [
     'GO_AND_FIGHT!_Special_Performance_Video.webp',
     'Kebun_Binatang_Saat_Hujan.webp',
     'Langit_Biru_Cinta_Searah.webp',
-    'Only_Today_&_Musim_Panas_yang_Kacau.webp'
+    'Only_Today_&_Musim_Panas_yang_Kacau.webp', 'Raja Hati - JKT48 Special Performance Video.webp'
 ];
