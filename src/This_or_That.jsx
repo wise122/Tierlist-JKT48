@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { thisOrThatQuestions, categories } from './data/this_or_that_data';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { saveChoices, getResultsForPairs, getAllResults } from './services/supabaseService';
 import './styles/ThisOrThat.css';
+import { supabase } from './services/supabaseService';
 
 const STORAGE_KEY = 'thisOrThatChoices';
 
@@ -28,6 +30,28 @@ const ThisOrThat = () => {
     if (savedChoices) {
       setChoices(JSON.parse(savedChoices));
     }
+  }, []);
+
+  // Test Supabase connection on mount
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('option_pairs')
+          .select('count')
+          .limit(1);
+        
+        if (error) {
+          console.error('Supabase connection error:', error);
+        } else {
+          console.log('Supabase connected successfully');
+        }
+      } catch (error) {
+        console.error('Failed to connect to Supabase:', error);
+      }
+    };
+
+    testConnection();
   }, []);
 
   useEffect(() => {
@@ -76,27 +100,12 @@ const ThisOrThat = () => {
   const saveToDatabase = async () => {
     setIsLoading(true);
     try {
-      // First save the choices
-      await fetch('/api/save-choices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ choices }),
-      });
+      // Directly call the Supabase service
+      await saveChoices(choices);
       
-      // Then get results for the pairs we just played
-      const response = await fetch('/api/results-for-pairs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ pairs: choices }),
-      });
-      
-      if (!response.ok) throw new Error('Failed to fetch results');
-      const data = await response.json();
-      setResults(data);
+      // Get results for the pairs we just played
+      const results = await getResultsForPairs(choices);
+      setResults(results);
       setShowResults(true);
       
       // Clear localStorage after successful save
