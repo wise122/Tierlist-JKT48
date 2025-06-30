@@ -11,6 +11,8 @@ import PointHistory from './PointHistory'
 import NotFound from './components/NotFound'
 import Footer from './components/Footer'
 import ViewportManager from './components/ViewportManager'
+import ThisOrThat from './This_or_That'
+import ToTAdmin from './ToT_admin'
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
             <Route path="/tierlist" element={<Tierlist />} />
             <Route path="/tierlist_lagu" element={<TierlistLagu />} />
             <Route path="/point-history" element={<PointHistory />} />
+            <Route path="/this-or-that" element={<ThisOrThat />} />
+            <Route path="/this-or-that/admin" element={<ToTAdmin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>

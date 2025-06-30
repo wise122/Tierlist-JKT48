@@ -1,0 +1,132 @@
+.admin-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FFB7E4 0%, #9381FF 100%);
+  padding: 2rem 1rem;
+}
+
+.admin-content {
+  max-width: 1024px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.admin-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #4B5563;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.admin-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.admin-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-button.primary {
+  background: #9381FF;
+  color: white;
+}
+
+.admin-button.primary:hover {
+  background: #7B68EE;
+  transform: translateY(-2px);
+}
+
+.admin-button.success {
+  background: #10B981;
+  color: white;
+}
+
+.admin-button.success:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+.file-input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.file-input::file-selector-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #F3F4F6;
+  color: #4B5563;
+  font-weight: 500;
+  margin-right: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-input::file-selector-button:hover {
+  background: #E5E7EB;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+}
+
+.message.success {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.message.error {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  background: #F3F4F6;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+}
+
+.admin-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.admin-table tr:hover {
+  background: #F9FAFB;
+} 
