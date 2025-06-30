@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { thisOrThatQuestions, categories } from './data/this_or_that_data';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { supabase } from './lib/supabase';
 import { saveChoices, getResultsForPairs, getAllResults } from './services/supabaseService';
 import './styles/ThisOrThat.css';
-import { supabase } from './services/supabaseService';
 
 const STORAGE_KEY = 'thisOrThatChoices';
 
