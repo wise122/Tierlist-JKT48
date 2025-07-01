@@ -33,18 +33,19 @@ const Suggestion = () => {
 
   return (
     <div className="suggestion-container">
-      <h1 className="suggestion-title">Suggest an Option</h1>
+      <h1 className="suggestion-title">Berikan Ide Pilihan</h1>
+      <p className="suggestion-subtitle">Ide pilihan akan digunakan untuk membuat game ini lebih baik</p>
       
       <div className="suggestion-card">
         <form onSubmit={handleSubmit} className="suggestion-form">
           <div className="form-group">
-            <label htmlFor="suggestion">Your Suggestion:</label>
+            <label htmlFor="suggestion">Masukan Idemu di sini:</label>
             <input
               type="text"
               id="suggestion"
               value={suggestion}
               onChange={(e) => setSuggestion(e.target.value)}
-              placeholder="Enter your suggestion here"
+              placeholder="Verif Theater tapi depanmmu Tiang...."
               disabled={isSubmitting}
               className="suggestion-input"
             />
