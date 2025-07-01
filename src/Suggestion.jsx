@@ -1,43 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { submitSuggestion } from './services/suggestionService';
+import { saveSuggestion } from './services/suggestionService';
 import './styles/Suggestion.css';
 
 const Suggestion = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    notes: ''
-  });
-  const [message, setMessage] = useState('');
+  const [suggestion, setSuggestion] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!suggestion.trim()) {
+      setError('Please enter a suggestion');
+      return;
+    }
+
     setIsSubmitting(true);
-    setMessage('');
-
+    setError('');
     try {
-      if (!formData.name) {
-        throw new Error('Please enter your suggestion');
-      }
-
-      await submitSuggestion(formData);
-      setMessage('Thank you for your suggestion!');
-      setFormData({
-        name: '',
-        notes: ''
-      });
+      await saveSuggestion(suggestion.trim());
+      setSuccess(true);
+      setSuggestion('');
     } catch (error) {
-      setMessage(error.message || 'An error occurred while submitting your suggestion');
+      console.error('Error submitting suggestion:', error);
+      setError('Failed to submit suggestion. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -45,48 +33,33 @@ const Suggestion = () => {
 
   return (
     <div className="suggestion-container">
-      <div className="suggestion-content">
-        <h1 className="suggestion-title">Suggest New JKT48 Fan Life Scenario</h1>
-        
+      <h1 className="suggestion-title">Suggest an Option</h1>
+      
+      <div className="suggestion-card">
         <form onSubmit={handleSubmit} className="suggestion-form">
           <div className="form-group">
-            <label htmlFor="name">Your Scenario *</label>
-            <textarea
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter your JKT48 fan life scenario (e.g., 'Dapat MnG tapi lupa mau ngomong apa')"
-              required
-              rows="3"
+            <label htmlFor="suggestion">Your Suggestion:</label>
+            <input
+              type="text"
+              id="suggestion"
+              value={suggestion}
+              onChange={(e) => setSuggestion(e.target.value)}
+              placeholder="Enter your suggestion here"
+              disabled={isSubmitting}
+              className="suggestion-input"
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="notes">Additional Notes</label>
-            <textarea
-              id="notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Any additional information or context (optional)"
-              rows="4"
-            />
-          </div>
-
-          {message && (
-            <div className={`message ${message.includes('error') ? 'error' : 'success'}`}>
-              {message}
-            </div>
-          )}
+          {error && <p className="error-message">{error}</p>}
+          {success && <p className="success-message">Thank you for your suggestion!</p>}
 
           <div className="button-group">
             <button
               type="submit"
-              className="submit-button"
               disabled={isSubmitting}
+              className="submit-button"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+              {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>
             <button
               type="button"

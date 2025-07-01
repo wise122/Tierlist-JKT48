@@ -1,132 +1,189 @@
 .admin-container {
   min-height: 100vh;
+  padding: 2rem;
   background: linear-gradient(135deg, #FFB7E4 0%, #9381FF 100%);
-  padding: 2rem 1rem;
 }
 
 .admin-content {
-  max-width: 1024px;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+.admin-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.admin-card {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
 
-.admin-title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #4B5563;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.admin-section {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
-}
-
-.section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 1rem;
-}
-
-.admin-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.admin-button.primary {
-  background: #9381FF;
-  color: white;
-}
-
-.admin-button.primary:hover {
-  background: #7B68EE;
-  transform: translateY(-2px);
-}
-
-.admin-button.success {
-  background: #10B981;
-  color: white;
-}
-
-.admin-button.success:hover {
-  background: #059669;
-  transform: translateY(-2px);
-}
-
-.file-input {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.file-input::file-selector-button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.375rem;
-  background: #F3F4F6;
-  color: #4B5563;
-  font-weight: 500;
-  margin-right: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.file-input::file-selector-button:hover {
-  background: #E5E7EB;
-}
-
-.message {
-  padding: 1rem;
-  border-radius: 0.5rem;
+.admin-card.current-options {
+  grid-column: 1 / -1;
   margin-top: 1rem;
 }
 
-.message.success {
-  background: #D1FAE5;
-  color: #065F46;
+.card-title {
+  color: #4B5563;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
 }
 
-.message.error {
-  background: #FEE2E2;
-  color: #991B1B;
+.card-description {
+  color: #6B7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-button {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.admin-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-button.primary {
+  background: linear-gradient(135deg, #FFB7E4 0%, #FF69B4 100%);
+  color: white;
+}
+
+.admin-button.secondary {
+  background: linear-gradient(135deg, #9381FF 0%, #7B68EE 100%);
+  color: white;
+}
+
+.admin-button.accent {
+  background: linear-gradient(135deg, #6EE7B7 0%, #3B82F6 100%);
+  color: white;
+}
+
+.admin-button.back {
+  background: rgba(255, 255, 255, 0.9);
+  color: #4B5563;
+  margin-top: 1rem;
+  max-width: 200px;
+}
+
+.file-input {
+  padding: 0.5rem;
+  border: 2px dashed #E5E7EB;
+  border-radius: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}
+
+.file-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .table-container {
   overflow-x: auto;
   margin-top: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #E5E7EB;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
+  background: white;
 }
 
-.admin-table th {
-  background: #F3F4F6;
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: #374151;
-}
-
+.admin-table th,
 .admin-table td {
   padding: 0.75rem 1rem;
+  text-align: left;
   border-bottom: 1px solid #E5E7EB;
 }
 
-.admin-table tr:hover {
+.admin-table th {
   background: #F9FAFB;
+  font-weight: 600;
+  color: #4B5563;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #34D399;
+}
+
+.message.error {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #F87171;
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 1rem;
+  }
+
+  .admin-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-button {
+    padding: 0.75rem;
+  }
+
+  .table-container {
+    margin: 0 -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
 } 

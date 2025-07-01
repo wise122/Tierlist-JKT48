@@ -9,46 +9,66 @@ const ToTAdmin = () => {
   const navigate = useNavigate();
   const [options, setOptions] = useState([]);
   const [message, setMessage] = useState('');
-  const [isDownloading, setIsDownloading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Load options from database on mount
   useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('options')
-          .select('*')
-          .order('created_at', { ascending: true });
-
-        if (error) throw error;
-        setOptions(data);
-      } catch (error) {
-        console.error('Error loading options:', error);
-        setMessage('Error: Could not load options');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadOptions();
   }, []);
+
+  const loadOptions = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('options')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setOptions(data);
+    } catch (error) {
+      console.error('Error loading options:', error);
+      setMessage({ text: 'Error: Could not load options', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const downloadTemplate = () => {
     const template = [
       ['name'],
-      ['Verif Theater terus tapi Row J']
+      ['Example Option 1'],
+      ['Example Option 2']
     ];
 
     const ws = XLSX.utils.aoa_to_sheet(template);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Options');
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
     XLSX.writeFile(wb, 'options_template.xlsx');
+  };
+
+  const exportCurrentOptions = () => {
+    try {
+      const exportData = options.map(({ name }) => ({ name }));
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Current Options');
+      XLSX.writeFile(wb, 'current_options.xlsx');
+      setMessage({ text: 'Options exported successfully!', type: 'success' });
+    } catch (error) {
+      console.error('Error exporting options:', error);
+      setMessage({ text: 'Error: Could not export options', type: 'error' });
+    }
   };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
+    setIsProcessing(true);
+    setMessage(null);
 
     reader.onload = async (e) => {
       try {
@@ -58,11 +78,9 @@ const ToTAdmin = () => {
         const data = XLSX.utils.sheet_to_json(worksheet);
 
         // Validate data format
-        const isValid = data.every(row => row.name);
-
+        const isValid = data.every(row => row.name && typeof row.name === 'string');
         if (!isValid) {
-          setMessage('Error: Invalid file format. Please use the template.');
-          return;
+          throw new Error('Invalid file format. Please use the template.');
         }
 
         // Insert options into database
@@ -73,42 +91,43 @@ const ToTAdmin = () => {
         if (error) throw error;
 
         // Reload options
-        const { data: newOptions, error: loadError } = await supabase
-          .from('options')
-          .select('*')
-          .order('created_at', { ascending: true });
-
-        if (loadError) throw loadError;
-        
-        setOptions(newOptions);
-        setMessage('Options imported successfully!');
+        await loadOptions();
+        setMessage({ text: 'Options imported successfully!', type: 'success' });
       } catch (error) {
         console.error('Error:', error);
-        setMessage('Error: Could not process the file or save to database.');
+        setMessage({ 
+          text: error.message || 'Error: Could not process the file or save to database.', 
+          type: 'error' 
+        });
+      } finally {
+        setIsProcessing(false);
       }
     };
 
     reader.readAsBinaryString(file);
   };
 
-  const exportOptions = () => {
-    const exportData = options.map(({ name }) => ({ name }));
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Options');
-    XLSX.writeFile(wb, 'options.xlsx');
-  };
-
   const handleDownloadSuggestions = async () => {
-    setIsDownloading(true);
+    setIsProcessing(true);
     try {
       await downloadSuggestionsAsExcel();
-      setMessage('Suggestions downloaded successfully!');
+      setMessage({ text: 'Suggestions downloaded successfully!', type: 'success' });
     } catch (error) {
-      setMessage('Error: Could not download suggestions.');
+      let errorMessage = 'Error: Could not download suggestions.';
+      
+      // Handle specific error messages
+      if (error.message.includes('Please log in as admin')) {
+        errorMessage = 'Error: Please log in as admin to download suggestions';
+      } else if (error.message.includes('Access denied')) {
+        errorMessage = 'Error: Admin privileges required to download suggestions';
+      } else if (error.message.includes('No suggestions found')) {
+        errorMessage = 'No suggestions found in the database';
+      }
+      
+      setMessage({ text: errorMessage, type: 'error' });
       console.error('Error downloading suggestions:', error);
     } finally {
-      setIsDownloading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -127,66 +146,70 @@ const ToTAdmin = () => {
       <div className="admin-content">
         <h1 className="admin-title">This or That Admin Panel</h1>
         
-        <div className="admin-section">
-          <h2 className="section-title">Template</h2>
-          <button
-            onClick={downloadTemplate}
-            className="admin-button primary"
-          >
-            Download Template
-          </button>
-        </div>
+        <div className="admin-grid">
+          <div className="admin-card">
+            <h2 className="card-title">Import Options</h2>
+            <p className="card-description">Import new options from an Excel file.</p>
+            <div className="card-actions">
+              <button onClick={downloadTemplate} className="admin-button secondary">
+                Download Template
+              </button>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileUpload}
+                className="file-input"
+                disabled={isProcessing}
+              />
+            </div>
+          </div>
 
-        <div className="admin-section">
-          <h2 className="section-title">Import Options</h2>
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleFileUpload}
-            className="file-input"
-          />
-        </div>
+          <div className="admin-card">
+            <h2 className="card-title">Export Options</h2>
+            <p className="card-description">Export current options to an Excel file.</p>
+            <button
+              onClick={exportCurrentOptions}
+              className="admin-button primary"
+              disabled={isProcessing}
+            >
+              Export Current Options
+            </button>
+          </div>
 
-        <div className="admin-section">
-          <h2 className="section-title">Export Options</h2>
-          <button
-            onClick={exportOptions}
-            className="admin-button success"
-          >
-            Export Current Options
-          </button>
-        </div>
-
-        <div className="admin-section">
-          <h2 className="section-title">User Suggestions</h2>
-          <button
-            onClick={handleDownloadSuggestions}
-            className="admin-button info"
-            disabled={isDownloading}
-          >
-            {isDownloading ? 'Downloading...' : 'Download Suggestions'}
-          </button>
+          <div className="admin-card">
+            <h2 className="card-title">Download Suggestions</h2>
+            <p className="card-description">Download user suggestions as Excel file.</p>
+            <button
+              onClick={handleDownloadSuggestions}
+              className="admin-button accent"
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'Processing...' : 'Download Suggestions'}
+            </button>
+          </div>
         </div>
 
         {message && (
-          <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
-            {message}
+          <div className={`message ${message.type}`}>
+            {message.text}
           </div>
         )}
 
-        <div className="admin-section">
-          <h2 className="section-title">Current Options</h2>
+        <div className="admin-card current-options">
+          <h2 className="card-title">Current Options</h2>
           <div className="table-container">
             <table className="admin-table">
               <thead>
                 <tr>
                   <th>Name</th>
+                  <th>Created At</th>
                 </tr>
               </thead>
               <tbody>
-                {options.map((option, index) => (
-                  <tr key={index}>
+                {options.map((option) => (
+                  <tr key={option.id}>
                     <td>{option.name}</td>
+                    <td>{new Date(option.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -196,8 +219,7 @@ const ToTAdmin = () => {
 
         <button
           onClick={() => navigate('/this-or-that')}
-          className="admin-button primary"
-          style={{ marginTop: '1rem' }}
+          className="admin-button back"
         >
           Back to This or That
         </button>
