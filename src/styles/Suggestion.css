@@ -1,0 +1,131 @@
+.suggestion-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #ff69b4, #9370db);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.suggestion-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+}
+
+.suggestion-title {
+  color: #ff69b4;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.suggestion-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #ff69b4;
+  outline: none;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.submit-button,
+.back-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  flex: 1;
+}
+
+.submit-button {
+  background-color: #ff69b4;
+  color: white;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  background-color: #ff4da6;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.back-button {
+  background-color: #9370db;
+  color: white;
+}
+
+.back-button:hover {
+  transform: translateY(-2px);
+  background-color: #8258d7;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.message.success {
+  background-color: #e6ffe6;
+  color: #006600;
+  border: 1px solid #00cc00;
+}
+
+.message.error {
+  background-color: #ffe6e6;
+  color: #cc0000;
+  border: 1px solid #ff0000;
+}
+
+@media (max-width: 768px) {
+  .suggestion-container {
+    padding: 1rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+} 

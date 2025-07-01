@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { thisOrThatQuestions, categories } from './data/this_or_that_data';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import { supabase } from './lib/supabase';
-import { saveChoices, getResultsForPairs, getAllResults } from './services/supabaseService';
+import { saveGameChoices, getRandomPairs } from './services/optionService';
+import { getResultsForPairs } from './services/supabaseService';
 import './styles/ThisOrThat.css';
 
 const STORAGE_KEY = 'thisOrThatChoices';
@@ -12,7 +12,6 @@ const ThisOrThat = () => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [questionCount, setQuestionCount] = useState(5);
   const [score, setScore] = useState({ option1: 0, option2: 0 });
   const [selectedAnswers, setSelectedAnswers] = useState([]);
@@ -21,6 +20,8 @@ const ThisOrThat = () => {
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
 
   const questionCountOptions = [5, 10, 15, 20, 'All'];
 
@@ -32,47 +33,41 @@ const ThisOrThat = () => {
     }
   }, []);
 
-  // Test Supabase connection on mount
+  // Load questions when game starts
   useEffect(() => {
-    const testConnection = async () => {
+    const loadQuestions = async () => {
       try {
-        const { data, error } = await supabase
-          .from('option_pairs')
-          .select('count')
-          .limit(1);
-        
-        if (error) {
-          console.error('Supabase connection error:', error);
-        } else {
-          console.log('Supabase connected successfully');
+        setError('');
+        setIsLoadingQuestions(true);
+        const pairs = await getRandomPairs(questionCount);
+        if (!pairs || pairs.length === 0) {
+          throw new Error('No questions available');
         }
+        setQuestions(pairs);
+        if (pairs.length < questionCount && questionCount !== 'All') {
+          setError(`Note: Only ${pairs.length} unique pairs available. Each option will appear only once.`);
+        }
+        setCurrentQuestionIndex(0);
+        setScore({ option1: 0, option2: 0 });
+        setSelectedAnswers([]);
+        setShowResults(false);
       } catch (error) {
-        console.error('Failed to connect to Supabase:', error);
+        console.error('Error loading questions:', error);
+        setError('Failed to load questions. Please try again.');
+        setGameStarted(false);
+      } finally {
+        setIsLoadingQuestions(false);
       }
     };
 
-    testConnection();
-  }, []);
-
-  useEffect(() => {
-    let filteredQuestions = selectedCategory === 'All' 
-      ? [...thisOrThatQuestions]
-      : thisOrThatQuestions.filter(q => q.category === selectedCategory);
-    
-    filteredQuestions = filteredQuestions.sort(() => Math.random() - 0.5);
-    
-    if (questionCount !== 'All' && filteredQuestions.length > questionCount) {
-      filteredQuestions = filteredQuestions.slice(0, questionCount);
+    if (gameStarted) {
+      loadQuestions();
     }
-    
-    setQuestions(filteredQuestions);
-    setCurrentQuestionIndex(0);
-    setScore({ option1: 0, option2: 0 });
-    setSelectedAnswers([]);
-    setShowResults(false);
-  }, [selectedCategory, questionCount]);
+  }, [questionCount, gameStarted]);
 
   const handleChoice = (choice) => {
+    if (!questions[currentQuestionIndex]) return;
+
     const newSelectedAnswers = [...selectedAnswers, choice];
     setSelectedAnswers(newSelectedAnswers);
     const currentQ = questions[currentQuestionIndex];
@@ -80,7 +75,6 @@ const ThisOrThat = () => {
     const newChoices = [...choices, {
       option1: currentQ.option1,
       option2: currentQ.option2,
-      category: currentQ.category,
       choice: choice === 'option1' ? currentQ.option1 : currentQ.option2
     }];
     
@@ -100,12 +94,24 @@ const ThisOrThat = () => {
   const saveToDatabase = async () => {
     setIsLoading(true);
     try {
-      // Directly call the Supabase service
-      await saveChoices(choices);
+      // Save choices using the new service
+      await saveGameChoices(choices);
       
-      // Get results for the pairs we just played
-      const results = await getResultsForPairs(choices);
-      setResults(results);
+      // Get results only for the pairs we just played
+      const pairResults = await Promise.all(
+        questions.map(async (pair) => {
+          const result = await getResultsForPairs([{
+            option1: pair.option1,
+            option2: pair.option2,
+            choice: choices.find(c => 
+              (c.option1 === pair.option1 && c.option2 === pair.option2) ||
+              (c.option1 === pair.option2 && c.option2 === pair.option1)
+            )?.choice || pair.option1
+          }]);
+          return result[0]; // Get first result since we're querying one pair at a time
+        })
+      );
+      setResults(pairResults);
       setShowResults(true);
       
       // Clear localStorage after successful save
@@ -113,6 +119,7 @@ const ThisOrThat = () => {
       setChoices([]);
     } catch (error) {
       console.error('Error saving choices:', error);
+      setError('Failed to save results');
     } finally {
       setIsLoading(false);
     }
@@ -124,20 +131,36 @@ const ThisOrThat = () => {
     setSelectedAnswers([]);
     setGameStarted(false);
     setShowResults(false);
+    setError('');
+    setQuestions([]);
   };
 
   const currentQuestion = questions[currentQuestionIndex];
   const isGameOver = currentQuestionIndex === questions.length - 1 && selectedAnswers.length === questions.length;
 
-  if (questions.length === 0) {
+  if (isLoadingQuestions) {
     return (
       <div className="this-or-that-container">
         <div className="game-container">
           <div className="game-card">
-            <h2 className="game-over-title text-red-600">No Questions Available</h2>
-            <p>Please select a different category or contact the administrator.</p>
-            <button onClick={() => navigate('/')} className="back-button">
-              Back to Home
+            <h2 className="game-over-title">Loading Questions...</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="this-or-that-container">
+        <div className="game-container">
+          <div className="game-card">
+            <h2 className="game-over-title text-red-600">{error}</h2>
+            <button onClick={restartGame} className="back-button">
+              Try Again
+            </button>
+            <button onClick={() => navigate('/this-or-that')} className="back-button">
+              Back to This or That
             </button>
           </div>
         </div>
@@ -148,28 +171,11 @@ const ThisOrThat = () => {
   return (
     <div className="this-or-that-container">
       <div className="game-container">
-        <h1 className="game-title">JKT48 This or That</h1>
+        <h1 className="game-title">JKT48 Fan Life Choices</h1>
 
         {!gameStarted ? (
           <div className="setup-card">
             <div className="setup-form">
-              <div className="form-group">
-                <label htmlFor="category">Select Category:</label>
-                <select
-                  id="category"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="select-input"
-                >
-                  <option value="All">All Categories</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="form-group">
                 <label htmlFor="questionCount">Number of Questions:</label>
                 <select
@@ -194,10 +200,10 @@ const ThisOrThat = () => {
               </button>
 
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/this-or-that')}
                 className="back-button"
               >
-                Back to Home
+                Back to This or That
               </button>
             </div>
           </div>
@@ -245,26 +251,16 @@ const ThisOrThat = () => {
                   Play Again
                 </button>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/this-or-that')}
                   className="back-button"
                 >
-                  Back to Home
+                  Back to This or That
                 </button>
               </div>
             </div>
           ) : (
             <div className="game-over-card">
               <h2 className="game-over-title">Game Over!</h2>
-              <div className="results-grid">
-                <div className="result-box option1">
-                  <p className="result-label">Option 1</p>
-                  <p className="result-score">{score.option1}</p>
-                </div>
-                <div className="result-box option2">
-                  <p className="result-label">Option 2</p>
-                  <p className="result-score">{score.option2}</p>
-                </div>
-              </div>
               <div className="button-group">
                 <button
                   onClick={saveToDatabase}
@@ -280,10 +276,10 @@ const ThisOrThat = () => {
                   Play Again
                 </button>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate('/this-or-that')}
                   className="back-button"
                 >
-                  Back to Home
+                  Back to This or That
                 </button>
               </div>
             </div>
@@ -293,7 +289,6 @@ const ThisOrThat = () => {
             <div className="progress-container">
               <div className="progress-info">
                 <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-                <span>Category: {currentQuestion.category}</span>
               </div>
               <div className="progress-bar">
                 <div
@@ -303,20 +298,22 @@ const ThisOrThat = () => {
               </div>
             </div>
 
-            <div className="options-grid">
-              <button
-                onClick={() => handleChoice('option1')}
-                className="option-button option1"
-              >
-                <p className="option-text">{currentQuestion.option1}</p>
-              </button>
-              <button
-                onClick={() => handleChoice('option2')}
-                className="option-button option2"
-              >
-                <p className="option-text">{currentQuestion.option2}</p>
-              </button>
-            </div>
+            {currentQuestion && (
+              <div className="options-grid">
+                <button
+                  onClick={() => handleChoice('option1')}
+                  className="option-button option1"
+                >
+                  <p className="option-text">{currentQuestion.option1}</p>
+                </button>
+                <button
+                  onClick={() => handleChoice('option2')}
+                  className="option-button option2"
+                >
+                  <p className="option-text">{currentQuestion.option2}</p>
+                </button>
+              </div>
+            )}
 
             <button
               onClick={() => {
@@ -326,7 +323,7 @@ const ThisOrThat = () => {
               }}
               className="back-button"
             >
-              Back to Setup
+              Back
             </button>
           </div>
         )}

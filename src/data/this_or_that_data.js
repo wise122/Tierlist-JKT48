@@ -16,4 +16,4 @@ export const thisOrThatQuestions = [
   }
 ];
 
-export const categories = ["Members", "Songs", "Teams", "Generations", "Performances"];
+export const categories = ["Members", "Songs", "Teams", "Generations", "Performances","Lucu-Lucuan"];

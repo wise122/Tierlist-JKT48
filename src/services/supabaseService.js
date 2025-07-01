@@ -1,10 +1,15 @@
 import { supabase } from '../lib/supabase';
 
 // Helper function to check if operation should proceed
-const checkSupabaseConfig = () => {
+export const checkSupabaseConfig = () => {
   if (!supabase) {
     throw new Error('Supabase client is not initialized');
   }
+};
+
+// Helper function to sanitize text for SQL queries
+const sanitizeText = (text) => {
+  return text.replace(/'/g, "''");
 };
 
 // Save user choices
@@ -72,29 +77,54 @@ export const saveChoices = async (choices) => {
 // Get results for specific pairs
 export const getResultsForPairs = async (pairs) => {
   try {
-    checkSupabaseConfig();
+    const results = [];
     
-    const filters = pairs.map(pair => {
+    for (const pair of pairs) {
+      // Sort options to match how they're stored in the database
       const [optionA, optionB] = [pair.option1, pair.option2].sort();
-      return `(option_a.eq.'${optionA}',option_b.eq.'${optionB}')`;
-    }).join(',');
+      
+      // Query for this specific pair combination
+      const { data, error } = await supabase
+        .from('option_pairs')
+        .select('*')
+        .eq('option_a', optionA)
+        .eq('option_b', optionB)
+        .single();
 
-    const { data, error } = await supabase
-      .from('option_pairs')
-      .select('*')
-      .or(filters);
+      if (error && error.code !== 'PGRST116') throw error; // Ignore not found error
 
-    if (error) throw error;
+      // If no data exists yet, return default values
+      if (!data) {
+        results.push({
+          option_a: pair.option1,
+          option_b: pair.option2,
+          option_a_selected: 0,
+          option_b_selected: 0,
+          option_a_percentage: 0,
+          option_b_percentage: 0,
+          total_occurrences: 0
+        });
+        continue;
+      }
 
-    return (data || []).map(row => ({
-      option_a: row.option_a,
-      option_b: row.option_b,
-      option_a_selected: row.option_a_selected || 0,
-      option_b_selected: row.option_b_selected || 0,
-      total_occurrences: row.total_occurrences || 0,
-      option_a_percentage: row.total_occurrences ? Math.round((row.option_a_selected / row.total_occurrences) * 1000) / 10 : 0,
-      option_b_percentage: row.total_occurrences ? Math.round((row.option_b_selected / row.total_occurrences) * 1000) / 10 : 0
-    }));
+      // Calculate percentages
+      const option_a_percentage = data.total_occurrences ? 
+        Math.round((data.option_a_selected / data.total_occurrences) * 100) : 0;
+      const option_b_percentage = data.total_occurrences ? 
+        Math.round((data.option_b_selected / data.total_occurrences) * 100) : 0;
+
+      results.push({
+        option_a: pair.option1,
+        option_b: pair.option2,
+        option_a_selected: data.option_a_selected,
+        option_b_selected: data.option_b_selected,
+        option_a_percentage,
+        option_b_percentage,
+        total_occurrences: data.total_occurrences
+      });
+    }
+
+    return results;
   } catch (error) {
     console.error('Error getting results:', error);
     throw error;

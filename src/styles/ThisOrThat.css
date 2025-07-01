@@ -152,10 +152,11 @@
 }
 
 .game-over-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: bold;
   color: #4B5563;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .results-grid {
@@ -195,58 +196,77 @@
   display: flex;
   gap: 1rem;
   justify-content: center;
+  margin-top: 1.5rem;
 }
 
-.start-button {
-  background: #FF69B4;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.start-button:hover {
-  background: #FF1493;
-  transform: translateY(-2px);
-}
-
-.back-button {
-  background: #6B7280;
-  color: white;
-  padding: 0.75rem 1.5rem;
+.button-group button {
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
+  padding: 1rem;
   border: none;
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+}
+
+.start-button,
+.back-button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.start-button {
+  background: linear-gradient(135deg, #9381FF 0%, #7B68EE 100%);
+  color: white;
+}
+
+.start-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.back-button {
+  background: #F3F4F6;
+  color: #4B5563;
 }
 
 .back-button:hover {
-  background: #4B5563;
+  background: #E5E7EB;
   transform: translateY(-2px);
 }
 
 .play-again-button {
-  background: #10B981;
+  background: linear-gradient(135deg, #9381FF 0%, #7B68EE 100%);
   color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .play-again-button:hover {
-  background: #059669;
   transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.save-button {
+  background: linear-gradient(135deg, #FFB7E4 0%, #FF69B4 100%);
+  color: white;
+}
+
+.save-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.save-button:disabled {
+  background: #FFB7E480;
+  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {
@@ -266,8 +286,17 @@
     font-size: 1.25rem;
   }
 
+  .game-over-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
   .button-group {
     flex-direction: column;
+  }
+
+  .button-group button {
+    max-width: none;
   }
 }
 
@@ -377,28 +406,6 @@
   color: #6B7280;
   font-size: 0.875rem;
   margin-top: 0.5rem;
-}
-
-.save-button {
-  background: #9381FF;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.save-button:hover:not(:disabled) {
-  background: #7B68EE;
-  transform: translateY(-2px);
-}
-
-.save-button:disabled {
-  background: #9381FF80;
-  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {

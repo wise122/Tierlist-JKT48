@@ -1,0 +1,79 @@
+.home-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #FFB7E4 0%, #9381FF 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 3rem;
+  font-size: 3rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.home-button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.home-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.home-button.play {
+  background: linear-gradient(135deg, #FFB7E4 0%, #FF69B4 100%);
+  color: white;
+}
+
+.home-button.suggest {
+  background: linear-gradient(135deg, #9381FF 0%, #7B68EE 100%);
+  color: white;
+}
+
+.home-button.back {
+  background: rgba(255, 255, 255, 0.9);
+  color: #4B5563;
+  backdrop-filter: blur(10px);
+}
+
+.home-button.back:hover {
+  background: white;
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 1rem;
+  }
+
+  .home-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .home-button {
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+  }
+} 
