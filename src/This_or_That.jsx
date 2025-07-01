@@ -171,13 +171,13 @@ const ThisOrThat = () => {
   return (
     <div className="this-or-that-container">
       <div className="game-container">
-        <h1 className="game-title">JKT48 Fan Life Choices</h1>
+        <h1 className="game-title">JKT48 This or That</h1>
 
         {!gameStarted ? (
           <div className="setup-card">
             <div className="setup-form">
               <div className="form-group">
-                <label htmlFor="questionCount">Number of Questions:</label>
+                <label htmlFor="questionCount">Jumlah Pertanyaan:</label>
                 <select
                   id="questionCount"
                   value={questionCount}
