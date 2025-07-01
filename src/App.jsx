@@ -38,7 +38,7 @@ function App() {
                     Play Game
                   </Link>
                   <Link to="/this-or-that/suggest" className="home-button suggest">
-                    Suggest Options
+                    Berikan Ide
                   </Link>
                   <Link to="/" className="home-button back">
                     Back to Homepage
