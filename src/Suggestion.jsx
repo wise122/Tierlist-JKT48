@@ -45,7 +45,7 @@ const Suggestion = () => {
               id="suggestion"
               value={suggestion}
               onChange={(e) => setSuggestion(e.target.value)}
-              placeholder="Verif Theater tapi depanmmu Tiang...."
+              placeholder="Verif Theater tapi depanmu Tiang...."
               disabled={isSubmitting}
               className="suggestion-input"
             />
