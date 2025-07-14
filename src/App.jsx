@@ -33,7 +33,7 @@ function App() {
             <Route path="/this-or-that" element={
               <div className="home-container">
                 <h1 className="home-title">JKT48 This or That</h1>
-                <div className="button-container">
+                <div className="home-button-container">
                   <Link to="/this-or-that/play" className="home-button play">
                     Play Game
                   </Link>

@@ -95,13 +95,14 @@
     }
 }
 
-.start-button {
+.homepage-container .dropdown-container .start-button {
     width: 100%;
     padding: 15px 20px;
-    background-color: #be2016;
+    background: #be2016 !important;
+    background-image: none !important;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 20px;
     font-size: 20px;
     font-weight: bold;
     cursor: pointer;
@@ -110,12 +111,14 @@
     letter-spacing: 1px;
 }
 
-.start-button:disabled {
-    background-color: #cccccc;
+.homepage-container .dropdown-container .start-button:disabled {
+    background: #cccccc !important;
+    background-image: none !important;
     cursor: not-allowed;
 }
 
-.start-button:hover:not(:disabled) {
-    background-color: #a11b13;
+.homepage-container .dropdown-container .start-button:hover:not(:disabled) {
+    background: #a11b13 !important;
+    background-image: none !important;
     transform: scale(1.02);
 }

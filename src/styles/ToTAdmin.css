@@ -1,21 +1,22 @@
 .admin-container {
   min-height: 100vh;
-  padding: 2rem;
   background: linear-gradient(135deg, #FFB7E4 0%, #9381FF 100%);
+  padding: 2rem 1rem;
 }
 
 .admin-content {
-  max-width: 1200px;
+  max-width: 1024px;
   margin: 0 auto;
 }
 
 .admin-title {
-  color: white;
-  text-align: center;
-  margin-bottom: 2rem;
   font-size: 2.5rem;
   font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-bottom: 2rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: 'Poppins', sans-serif;
 }
 
 .admin-grid {
@@ -28,27 +29,21 @@
 .admin-card {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
 
-.admin-card.current-options {
-  grid-column: 1 / -1;
-  margin-top: 1rem;
-}
-
 .card-title {
-  color: #4B5563;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  color: #4B5563;
+  margin-bottom: 1rem;
 }
 
 .card-description {
   color: #6B7280;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .card-actions {
@@ -58,18 +53,13 @@
 }
 
 .admin-button {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 0.5rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
-}
-
-.admin-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .admin-button:disabled {
@@ -78,56 +68,76 @@
 }
 
 .admin-button.primary {
-  background: linear-gradient(135deg, #FFB7E4 0%, #FF69B4 100%);
-  color: white;
-}
-
-.admin-button.secondary {
   background: linear-gradient(135deg, #9381FF 0%, #7B68EE 100%);
   color: white;
 }
 
+.admin-button.secondary {
+  background: #F3F4F6;
+  color: #4B5563;
+}
+
 .admin-button.accent {
-  background: linear-gradient(135deg, #6EE7B7 0%, #3B82F6 100%);
+  background: linear-gradient(135deg, #FFB7E4 0%, #FF69B4 100%);
   color: white;
 }
 
 .admin-button.back {
-  background: rgba(255, 255, 255, 0.9);
+  background: #F3F4F6;
   color: #4B5563;
-  margin-top: 1rem;
-  max-width: 200px;
+  width: 100%;
+  max-width: 300px;
+  margin: 2rem auto;
+  display: block;
+}
+
+.admin-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .file-input {
-  padding: 0.5rem;
-  border: 2px dashed #E5E7EB;
-  border-radius: 0.5rem;
   width: 100%;
-  cursor: pointer;
+  padding: 0.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  background-color: white;
 }
 
-.file-input:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.message {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.message.error {
+  background-color: #FEE2E2;
+  color: #991B1B;
 }
 
 .table-container {
   overflow-x: auto;
   margin-top: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #E5E7EB;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 .admin-table th,
 .admin-table td {
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   text-align: left;
   border-bottom: 1px solid #E5E7EB;
 }
@@ -142,48 +152,21 @@
   border-bottom: none;
 }
 
-.message {
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin: 1rem 0;
-  text-align: center;
-  font-weight: 500;
-}
-
-.message.success {
-  background: #ECFDF5;
-  color: #059669;
-  border: 1px solid #34D399;
-}
-
-.message.error {
-  background: #FEF2F2;
-  color: #DC2626;
-  border: 1px solid #F87171;
-}
-
-@media (max-width: 768px) {
-  .admin-container {
-    padding: 1rem;
-  }
-
+@media (max-width: 640px) {
   .admin-title {
     font-size: 2rem;
-    margin-bottom: 1.5rem;
   }
 
   .admin-grid {
     grid-template-columns: 1fr;
   }
 
-  .admin-button {
-    padding: 0.75rem;
+  .admin-card {
+    padding: 1.5rem;
   }
 
-  .table-container {
-    margin: 0 -1rem;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
+  .admin-table th,
+  .admin-table td {
+    padding: 0.75rem;
   }
 } 

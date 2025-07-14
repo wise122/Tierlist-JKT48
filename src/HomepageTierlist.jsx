@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Homepage.css';
+import './HomepageTierlist.css';
 import logo from './assets/icon/TierlistIcon.png';
 import { setlistSongs } from './data/setlistSongs';
 import { formatDistanceToNow } from 'date-fns';

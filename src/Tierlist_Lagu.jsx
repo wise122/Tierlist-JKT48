@@ -1152,7 +1152,7 @@ const Tierlist = () => {
                         ))}
                     </div>
 
-                    <div className="button-container">
+                    <div className="tierlist-button-container">
                         <FormControlLabel
                             control={
                                 <Switch

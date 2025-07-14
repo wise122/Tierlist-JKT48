@@ -1190,9 +1190,8 @@ const Tierlist = () => {
         <div className="tierlist-page">
             <header className="header">
                 <IconButton 
-                    className="back-button"
-                    onClick={() => navigate(-1)}
-                    size="large"
+                    onClick={() => navigate(-1)} 
+                    sx={{ color: 'white', marginRight: 1 }}
                 >
                     <ArrowBack />
                 </IconButton>
@@ -1339,7 +1338,7 @@ const Tierlist = () => {
                         ))}
                     </div>
 
-                    <div className="button-container">
+                    <div className="tierlist-button-container">
                         <FormControlLabel
                             control={
                                 <Switch
