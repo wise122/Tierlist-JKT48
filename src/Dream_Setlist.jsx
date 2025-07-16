@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, ToggleButton, ToggleButtonGroup, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Paper, Switch, FormControlLabel, Typography, Box, IconButton, Menu, ListItemIcon, ListItemText, Autocomplete, InputAdornment } from '@mui/material';
-import { Settings, ArrowUpward, ArrowDownward, Edit, Delete, Save, Search, ArrowBack } from '@mui/icons-material';
+import { Settings, ArrowUpward, ArrowDownward, Edit, Delete, Save, Search, ArrowBack, Info } from '@mui/icons-material';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useSensor, useSensors, pointerWithin, useDroppable } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -11,6 +11,7 @@ import { activeMemberFiles, exMemberFiles } from './data/memberData';
 import logo from './assets/icon/TierlistIcon.png';
 import './Dream_Setlist.css';
 import { useNavigate } from 'react-router-dom';
+import ViewportManager from './components/ViewportManager';
 
 const TIER_ROWS = [
   { id: 'inti', name: 'Tim Inti', color: '#FF7F7F' },
@@ -34,7 +35,7 @@ const SONG_TABLE_ROWS = [
   { no: 'EN01', type: 'en' },
   { no: 'EN02', type: 'en' },
   { no: 'EN03', type: 'en' },
-].map(row => ({ ...row, song: '', member: null, backupMember: null }));
+].map(row => ({ ...row, song: '', members: [], backupMembers: [] }));
 
 const getContrastColor = (hexcolor) => {
     const r = parseInt(hexcolor.substr(1,2), 16);
@@ -88,15 +89,40 @@ const parseNameForSearch = (filename) => {
     return (genPart + ' ' + nameParts.join(' ')).toLowerCase();
 };
 
-const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContextMenu, isSelected, isDragMode }) => {
+const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContextMenu, isSelected, isDragMode, isInTable = false }) => {
     const style = {
         opacity: isSelected ? 0.5 : isDragging ? 0.3 : 1,
         cursor: isDragMode ? (dragOverlay ? 'grabbing' : 'grab') : 'pointer',
         position: dragOverlay ? 'fixed' : 'relative',
         transform: dragOverlay ? 'scale(1.05)' : 'none',
         zIndex: dragOverlay ? 999 : 1,
-        border: isSelected ? '2px solid #4CAF50' : 'none'
+        border: isSelected ? '2px solid #4CAF50' : 'none',
+        ...(isInTable ? {
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+        } : {})
     };
+
+    const imageStyle = isInTable ? {
+        width: '100%',
+        height: 'auto',
+        objectFit: 'cover',
+        aspectRatio: '1/1',
+        borderRadius: '4px'
+    } : {};
+
+    const nameStyle = isInTable ? {
+        fontSize: '0.8rem',
+        textAlign: 'center',
+        marginTop: '4px',
+        width: '100%',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+    } : {};
 
     const handleContextMenu = (e) => {
         e.preventDefault(); // Prevent default context menu
@@ -112,8 +138,8 @@ const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContex
             onClick={() => onImageClick && onImageClick(image)}
             onContextMenu={handleContextMenu}
         >
-            <img src={image.src} alt={image.name} />
-            <div className="member-name">{image.name}</div>
+            <img src={image.src} alt={image.name} style={imageStyle} />
+            <div className="member-name" style={nameStyle}>{image.name}</div>
         </div>
     );
 };
@@ -275,6 +301,9 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow }) => {
 };
 
 const DreamSetlist = () => {
+  // Add state for welcome dialog
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  
   // Step state: 0 = start, 1 = member select, 2 = song select
   const [step, setStep] = useState(0);
   const [memberType, setMemberType] = useState('active');
@@ -283,13 +312,27 @@ const DreamSetlist = () => {
     const [images, setImages] = useState([]);
     const [activeId, setActiveId] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
-  const [songTable, setSongTable] = useState(SONG_TABLE_ROWS.map(row => ({ ...row, song: '', member: null, backupMember: null })));
+  const [songTable, setSongTable] = useState(SONG_TABLE_ROWS.map(row => ({ ...row, song: '', members: [], backupMembers: [] })));
   const [title, setTitle] = useState('');
   const tierlistRef = useRef(null);
-  const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
   const [filteredImages, setFilteredImages] = useState([]);
 
   const navigate = useNavigate();
+
+  // Check if it's first visit when component mounts
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('dreamSetlistVisited');
+    if (!hasVisited) {
+      setShowWelcomeDialog(true);
+      localStorage.setItem('dreamSetlistVisited', 'true');
+    }
+  }, []);
+
+  // Handle welcome dialog close
+  const handleWelcomeDialogClose = () => {
+    setShowWelcomeDialog(false);
+  };
 
   // Step 1: Member type selection
     useEffect(() => {
@@ -319,7 +362,7 @@ const DreamSetlist = () => {
   }, [step, memberType]);
 
   // Add effect to filter images based on search
-  useEffect(() => {
+    useEffect(() => {
       if (step === 1) {
           const filtered = images.filter(image => {
               const searchString = parseNameForSearch(image.src);
@@ -346,7 +389,8 @@ const DreamSetlist = () => {
     if (step === 2) {
       const pool = JSON.parse(localStorage.getItem('dreamSetlistMemberPool') || '[]');
       setImages(pool.filter(img => img.containerId === 'inti' || img.containerId === 'backup'));
-            }
+      setIsDragMode(false); // Force click-to-place mode in step 2
+    }
   }, [step]);
 
   // DnD setup
@@ -530,13 +574,22 @@ const DreamSetlist = () => {
   const handleSongChange = (idx, songId) => {
     setSongTable(prev => prev.map((row, i) => i === idx ? { ...row, song: songId } : row));
   };
-  // Update handleAssignMemberToSong to handle both member types
+  // Update handleAssignMemberToSong to handle arrays
   const handleAssignMemberToSong = (idx, member, isBackup = false) => {
-    setSongTable(prev => prev.map((row, i) => 
-        i === idx 
-            ? { ...row, [isBackup ? 'backupMember' : 'member']: member }
-            : row
-    ));
+    setSongTable(prev => prev.map((row, i) => {
+        if (i === idx) {
+            const memberArray = isBackup ? row.backupMembers : row.members;
+            // Check if member is already in the array
+            const memberExists = memberArray.some(m => m.id === member.id);
+            if (!memberExists) {
+                return {
+                    ...row,
+                    [isBackup ? 'backupMembers' : 'members']: [...memberArray, member]
+                };
+            }
+        }
+        return row;
+    }));
 };
 
   // DnD for song table (step 3)
@@ -565,35 +618,36 @@ const DreamSetlist = () => {
         }
     };
 
-    // Update handleSongTableMemberRightClick to handle both member types
-    const handleSongTableMemberRightClick = (e, idx, isBackup = false) => {
-        e.preventDefault(); // Prevent default context menu
-        const member = isBackup ? songTable[idx].backupMember : songTable[idx].member;
+    // Update handleSongTableMemberRightClick to handle arrays
+    const handleSongTableMemberRightClick = (e, idx, memberId, isBackup = false) => {
+        e.preventDefault();
+        const row = songTable[idx];
+        const memberArray = isBackup ? row.backupMembers : row.members;
+        const member = memberArray.find(m => m.id === memberId);
+        
         if (member) {
             setSongTable(prev => prev.map((row, i) => 
-                i === idx ? { ...row, [isBackup ? 'backupMember' : 'member']: null } : row
+                i === idx ? {
+                    ...row,
+                    [isBackup ? 'backupMembers' : 'members']: memberArray.filter(m => m.id !== memberId)
+                } : row
             ));
+            
             // Add member back to the pool
             setImages(prev => {
-                // Get all images except the one being moved (if it exists in prev)
                 const otherImages = prev.filter(img => img.id !== member.id);
-                
-                // Create updated version of the image for the pool
                 const updatedImage = {
                     ...member,
                     containerId: 'image-pool'
                 };
                 
-                // Find the correct position based on originalIndex
                 const insertIndex = otherImages.findIndex(img => 
                     img.containerId === 'image-pool' && img.originalIndex > member.originalIndex
                 );
                 
                 if (insertIndex === -1) {
-                    // If no higher index found, append to the end
                     return [...otherImages, updatedImage];
                 } else {
-                    // Insert at the correct position
                     return [
                         ...otherImages.slice(0, insertIndex),
                         updatedImage,
@@ -624,220 +678,308 @@ const DreamSetlist = () => {
       }
   };
 
-  // Render
-    return (
-        <div className="tierlist-page" style={{ 
-            backgroundColor: '#1a1a2e',
-            minHeight: '100vh',
-            padding: '20px',
-            color: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-        }}>
-            <header className="header" style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: '30px',
-                backgroundColor: 'rgba(42, 42, 62, 0.95)',
-                borderRadius: '0',
-                width: '100%',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 1000,
-                backdropFilter: 'blur(5px)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                padding: '10px 20px'
-            }}>
-                <IconButton
-                    onClick={() => navigate('/')}
-                    sx={{
-                        color: 'white',
-                        mr: 2,
-                        '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+  return (
+    <>
+      <ViewportManager />
+      <div className="tierlist-page" style={{ 
+        backgroundColor: '#1a1a2e',
+        minHeight: '100vh',
+        padding: '20px',
+        color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        transform: 'scale(var(--viewport-scale, 1))',
+        transformOrigin: 'top center'
+      }}>
+        {/* Add Welcome Dialog */}
+        <Dialog
+                    open={showWelcomeDialog}
+                    onClose={handleWelcomeDialogClose}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{
+                        style: {
+                            backgroundColor: '#2a2a3e',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.12)'
                         }
                     }}
                 >
-                    <ArrowBack />
-                </IconButton>
-                <div style={{
+                    <DialogTitle sx={{ 
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                    }}>
+                        <Info sx={{ color: '#4CAF50' }} />
+                        Welcome to Dream Setlist JKT48!
+                    </DialogTitle>
+                    <DialogContent sx={{ mt: 2 }}>
+                        <Typography variant="h6" gutterBottom sx={{ color: '#4CAF50' }}>
+                            Create Your Perfect Setlist!
+                        </Typography>
+                        
+                        <Typography variant="body1" paragraph>
+                            With Dream Setlist, you can:
+                        </Typography>
+                        
+                        <Box sx={{ ml: 2, mb: 2 }}>
+                            <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                • Choose members from active, ex-members, or both
+                            </Typography>
+                            <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                • Organize members into Main Team and Backup Team
+                            </Typography>
+                            <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                • Select songs and assign multiple members or a center to each song
+                            </Typography>
+                            <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                • Save your setlist as an image
+                            </Typography>
+                        </Box>
+
+                        <Typography variant="h6" gutterBottom sx={{ color: '#4CAF50', mt: 2 }}>
+                            How to Use:
+                        </Typography>
+                        
+                        <Box sx={{ ml: 2 }}>
+                            <Typography variant="body1" paragraph>
+                                1. Select member type (Active/Ex/All Members)
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                2. Arrange members into teams using drag & drop or click-to-place
+                            </Typography>
+                            <Typography variant="body1" paragraph>
+                                3. Choose songs and assign members to each position
+                            </Typography>
+                            <Typography variant="body1">
+                                4. Save your creation as an image!
+                            </Typography>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ 
+                        borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+                        padding: '16px 24px'
+                    }}>
+                        <Button 
+                            onClick={handleWelcomeDialogClose}
+                            variant="contained"
+                            sx={{
+                                bgcolor: '#4CAF50',
+                                '&:hover': {
+                                    bgcolor: '#45a049'
+                                }
+                            }}
+                        >
+                            Let's Start!
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <header className="header" style={{
                     display: 'flex',
                     alignItems: 'center',
+                    marginBottom: '30px',
+                    backgroundColor: 'rgba(42, 42, 62, 0.95)',
+                    borderRadius: '0',
+                    width: '100%',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 1000,
+                    backdropFilter: 'blur(5px)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                    padding: '10px 20px'
                 }}>
-                    <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" style={{
-                        width: '50px',
-                        height: '50px',
-                        marginRight: '15px'
-                    }} />
-                    <h1 className="header-title" style={{
-                        margin: 0,
-                        fontSize: '24px',
-                        fontWeight: 'bold'
-                    }}>Dream Setlist JKT48</h1>
-                        </div>
-            </header>
-            <div className="tierlist-container" style={{ 
-                width: '100%', 
-                maxWidth: '1200px',
-                marginTop: '80px' // Add margin to account for fixed header
-            }}>
-                {step === 0 && (
-                    <Box sx={{ 
+                    <IconButton 
+                        onClick={() => navigate('/')}
+                        sx={{
+                            color: 'white',
+                            mr: 2,
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }}
+                    >
+                        <ArrowBack />
+                    </IconButton>
+                    <div style={{
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: 2,
-                        mt: 8
                     }}>
-                        <Typography variant="h4" sx={{ 
-                            mb: 4,
-                            fontWeight: 'bold',
-                            textAlign: 'center',
-                            color: 'white'
-                        }}>
-                            Pilih Status Member
-                        </Typography>
-                        <Box sx={{ 
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
-                            width: '100%',
-                            maxWidth: '400px'
-                        }}>
-                            <Button 
-                                variant="contained"
-                                onClick={() => {
-                                    setMemberType('active');
-                                    setStep(1);
-                                }}
-                                sx={{
-                                    py: 2,
-                                    borderRadius: 3,
-                                    backgroundColor: '#FF7F7F',
-                                    fontSize: '1.1rem',
-                                    textTransform: 'none',
-                                    '&:hover': {
-                                        backgroundColor: '#FF6B6B'
-                                    }
-                                }}
-                            >
-                                Active Member
-                            </Button>
-                            <Button 
-                                variant="contained"
-                                onClick={() => {
-                                    setMemberType('ex');
-                                    setStep(1);
-                                }}
-                                sx={{
-                                    py: 2,
-                                    borderRadius: 3,
-                                    backgroundColor: '#7F7FFF',
-                                    fontSize: '1.1rem',
-                                    textTransform: 'none',
-                                    '&:hover': {
-                                        backgroundColor: '#6B6BFF'
-                                    }
-                                }}
-                            >
-                                Ex Member
-                            </Button>
-                            <Button 
-                                variant="contained"
-                                onClick={() => {
-                                    setMemberType('all');
-                                    setStep(1);
-                                }}
-                                sx={{
-                                    py: 2,
-                                    borderRadius: 3,
-                                    backgroundColor: '#BFBFBF',
-                                    fontSize: '1.1rem',
-                                    textTransform: 'none',
-                                    '&:hover': {
-                                        backgroundColor: '#A6A6A6'
-                                    }
-                                }}
-                            >
-                                All Member
-                            </Button>
-                            <Button 
-                                variant="contained"
-                                onClick={() => navigate('/')}
-                                sx={{
-                                    py: 2,
-                                    borderRadius: 3,
-                                    backgroundColor: 'white',
-                                    color: '#1a1a2e',
-                                    fontSize: '1.1rem',
-                                    textTransform: 'none',
-                                    '&:hover': {
-                                        backgroundColor: '#f5f5f5'
-                                    }
-                                }}
-                            >
-                                Back to Homepage
-                            </Button>
-                        </Box>
-                    </Box>
-                )}
-                {step === 1 && (
-                    <>
+                        <img src={logo} alt="JKT48 Tierlist Logo" className="header-logo" style={{
+                            width: '50px',
+                            height: '50px',
+                            marginRight: '15px'
+                        }} />
+                        <h1 className="header-title" style={{
+                            margin: 0,
+                            fontSize: '24px',
+                            fontWeight: 'bold'
+                        }}>Dream Setlist JKT48</h1>
+                            </div>
+                </header>
+                <div className="tierlist-container" style={{ 
+                    width: '100%', 
+                    maxWidth: '1200px',
+                    marginTop: '80px' // Add margin to account for fixed header
+                }}>
+                    {step === 0 && (
                         <Box sx={{ 
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            width: '100%',
-                            gap: 3
+                            gap: 2,
+                            mt: 8
                         }}>
                             <Typography variant="h4" sx={{ 
+                                mb: 4,
                                 fontWeight: 'bold',
                                 textAlign: 'center',
-                                color: 'white',
-                                mb: 2
+                                color: 'white'
                             }}>
-                                Pilih Member ke Tim Inti & Tim Backup
-                        </Typography>
+                                Pilih Status Member
+                            </Typography>
                             <Box sx={{ 
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
+                                flexDirection: 'column',
+                                gap: 2,
                                 width: '100%',
-                                backgroundColor: 'rgba(255,255,255,0.05)',
-                                padding: '15px 20px',
-                                borderRadius: '16px',
-                                mb: 2
+                                maxWidth: '400px'
                             }}>
-                                <FormControlLabel
-                                    control={
-                                        <Switch 
-                                            checked={isDragMode} 
-                                            onChange={e => { 
-                                                setIsDragMode(e.target.checked); 
-                                                setSelectedImage(null); 
-                                            }} 
-                                            color="primary"
-                                            sx={{
-                                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                                    color: '#4CAF50'
-                                                }
-                                            }}
-                                        />
-                                    }
-                                    label={
-                                        <Box sx={{ color: 'white', textAlign: 'left' }}>
-                                            <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                                {isDragMode ? 'Drag & Drop' : 'Click to Place'}
-                        </Typography>
-                                            {!isDragMode && (
-                                                <Typography variant="caption" sx={{ display: 'block', color: '#aaa' }}>
-                                                    Click again to return to pool
-                        </Typography>
-                                            )}
-                    </Box>
+                                <Button 
+                                    variant="contained"
+                                    onClick={() => {
+                                        setMemberType('active');
+                                        setStep(1);
+                                    }}
+                                    sx={{
+                                        py: 2,
+                                        borderRadius: 3,
+                                        backgroundColor: '#FF7F7F',
+                                        fontSize: '1.1rem',
+                                        textTransform: 'none',
+                                        '&:hover': {
+                                            backgroundColor: '#FF6B6B'
+                                        }
+                                    }}
+                                >
+                                    Active Member
+                                </Button>
+                                <Button 
+                                    variant="contained"
+                                    onClick={() => {
+                                        setMemberType('ex');
+                                        setStep(1);
+                                    }}
+                                    sx={{
+                                        py: 2,
+                                        borderRadius: 3,
+                                        backgroundColor: '#7F7FFF',
+                                        fontSize: '1.1rem',
+                                        textTransform: 'none',
+                                        '&:hover': {
+                                            backgroundColor: '#6B6BFF'
+                                        }
+                                    }}
+                                >
+                                    Ex Member
+                                </Button>
+                                <Button 
+                                    variant="contained"
+                                    onClick={() => {
+                                        setMemberType('all');
+                                        setStep(1);
+                                    }}
+                                    sx={{
+                                        py: 2,
+                                        borderRadius: 3,
+                                        backgroundColor: '#BFBFBF',
+                                        fontSize: '1.1rem',
+                                        textTransform: 'none',
+                                        '&:hover': {
+                                            backgroundColor: '#A6A6A6'
+                                        }
+                                    }}
+                                >
+                                    All Member
+                                </Button>
+                                <Button 
+                                    variant="contained"
+                                    onClick={() => navigate('/')}
+                                    sx={{
+                                        py: 2,
+                                        borderRadius: 3,
+                                        backgroundColor: 'white',
+                                        color: '#1a1a2e',
+                                        fontSize: '1.1rem',
+                                        textTransform: 'none',
+                                        '&:hover': {
+                                            backgroundColor: '#f5f5f5'
+                                        }
+                                    }}
+                                >
+                                    Back to Homepage
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
+                    {step === 1 && (
+                        <>
+                            <Box sx={{ 
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                width: '100%',
+                                gap: 3
+                            }}>
+                                <Typography variant="h4" sx={{ 
+                                    fontWeight: 'bold',
+                                    textAlign: 'center',
+                                    color: 'white',
+                                    mb: 2
+                                }}>
+                                    Pilih Member ke Tim Inti & Tim Backup
+                            </Typography>
+                                <Box sx={{ 
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    width: '100%',
+                                    backgroundColor: 'rgba(255,255,255,0.05)',
+                                    padding: '15px 20px',
+                                    borderRadius: '16px',
+                                    mb: 2
+                                }}>
+                                    <FormControlLabel
+                                        control={
+                                            <Switch 
+                                                checked={isDragMode} 
+                                                onChange={e => { 
+                                                    setIsDragMode(e.target.checked); 
+                                                    setSelectedImage(null); 
+                                                }} 
+                                                color="primary"
+                                                sx={{
+                                                    '& .MuiSwitch-switchBase.Mui-checked': {
+                                                        color: '#4CAF50'
+                                                    }
+                                                }}
+                                            />
+                                        }
+                                        label={
+                                            <Box sx={{ color: 'white', textAlign: 'left' }}>
+                                                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                                    {isDragMode ? 'Drag & Drop' : 'Click to Place'}
+                            </Typography>
+                                                {!isDragMode && (
+                                                    <Typography variant="caption" sx={{ display: 'block', color: '#aaa' }}>
+                                                        Click again to return to pool
+                            </Typography>
+                                                )}
+                        </Box>
                                     }
                                 />
                     <Button 
@@ -968,13 +1110,13 @@ const DreamSetlist = () => {
                                             InputProps={{
                                                 startAdornment: (
                                                     <InputAdornment position="start">
-                                                        <Search sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
-                                                    </InputAdornment>
+                                    <Search sx={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                                </InputAdornment>
                                                 ),
                                             }}
-                                            sx={{
+                                    sx={{
                                                 '& .MuiOutlinedInput-root': {
-                                                    color: 'white',
+                                            color: 'white',
                                                     '& fieldset': {
                                                         borderColor: 'rgba(255, 255, 255, 0.23)',
                                                     },
@@ -1041,13 +1183,13 @@ const DreamSetlist = () => {
                             flexWrap: 'wrap'
                         }}>
                             <Box sx={{ flex: 1, minWidth: '200px' }}>
-                                <TextField
-                                    fullWidth
+                    <TextField
+                        fullWidth
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Enter title..."
                                     variant="standard"
-                                    sx={{
+                        sx={{ 
                                         input: { color: 'white', fontSize: '1.5rem' },
                                         '& .MuiInput-underline:before': {
                                             borderBottomColor: 'rgba(255, 255, 255, 0.42)',
@@ -1062,19 +1204,6 @@ const DreamSetlist = () => {
                                 />
                             </Box>
                             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                                <FormControlLabel
-                                    control={
-                                        <Switch 
-                                            checked={isDragMode} 
-                                            onChange={e => { 
-                                                setIsDragMode(e.target.checked); 
-                                                setSelectedImage(null); 
-                                            }} 
-                                            color="primary"
-                                        />
-                                    }
-                                    label={isDragMode ? 'Drag & Drop' : 'Click to Place'}
-                                />
                                 <Button
                                     variant="contained"
                                     startIcon={<Save />}
@@ -1104,154 +1233,191 @@ const DreamSetlist = () => {
                             }}>
                                 {title || 'Dream Setlist JKT48'}
                             </Typography>
-                            <DndContext
-                                sensors={sensors}
-                                onDragStart={handleSongTableDragStart}
-                                onDragOver={handleSongTableDragOver}
-                                onDragEnd={handleSongTableDragEnd}
-                            >
-                                <table className="dreamsetlist-table">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Judul Lagu</th>
-                                            <th>Member (Center for Group Song)</th>
-                                            <th>Backup Member</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {songTable.map((row, idx) => (
-                                            <tr key={row.no}>
-                                                <td>{row.no}</td>
-                                                <td>
-                                                    <Autocomplete
-                                                        value={dreamSetlistSongs.find(song => song.id === row.song) || null}
-                                                        onChange={(event, newValue) => handleSongChange(idx, newValue?.id || '')}
-                                                        options={dreamSetlistSongs}
-                                                        getOptionLabel={(option) => option.title}
-                                                        renderInput={(params) => (
-                                                            <TextField
-                                                                {...params}
-                                                                variant="standard"
-                                                                placeholder="Pilih Lagu"
-                                                                sx={{ 
-                                                                    minWidth: 200,
-                                                                    '& .MuiInputBase-root': {
-                                                                        color: 'white',
-                                                                        '&:before': {
-                                                                            borderBottomColor: 'rgba(255, 255, 255, 0.42)',
-                                                                        },
-                                                                        '&:hover:not(.Mui-disabled):before': {
-                                                                            borderBottomColor: 'rgba(255, 255, 255, 0.87)',
-                                                                        },
-                                                                        '&.Mui-focused:after': {
-                                                                            borderBottomColor: '#4CAF50',
-                                                                        }
+                            <table className="dreamsetlist-table">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Judul Lagu</th>
+                                        <th>Member (Center for Group Song)</th>
+                                        <th>Backup Member</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {songTable.map((row, idx) => (
+                                        <tr key={row.no}>
+                                            <td>{row.no}</td>
+                                            <td>
+                                                <Autocomplete
+                                                    value={dreamSetlistSongs.find(song => song.id === row.song) || null}
+                                                    onChange={(event, newValue) => handleSongChange(idx, newValue?.id || '')}
+                                                    options={dreamSetlistSongs}
+                                                    getOptionLabel={(option) => option.title}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            variant="standard"
+                                                            placeholder="Pilih Lagu"
+                                                            sx={{ 
+                                                                minWidth: 200,
+                                                                '& .MuiInputBase-root': {
+                                                                    color: 'white',
+                                                                    '&:before': {
+                                                                        borderBottomColor: 'rgba(255, 255, 255, 0.42)',
                                                                     },
-                                                                    '& .MuiAutocomplete-endAdornment': {
-                                                                        '& .MuiSvgIcon-root': {
-                                                                            color: 'rgba(255, 255, 255, 0.54)',
-                                                                        }
+                                                                    '&:hover:not(.Mui-disabled):before': {
+                                                                        borderBottomColor: 'rgba(255, 255, 255, 0.87)',
+                                                                    },
+                                                                    '&.Mui-focused:after': {
+                                                                        borderBottomColor: '#4CAF50',
                                                                     }
-                                                                }}
-                                                            />
-                                                        )}
-                                        sx={{
-                                                            '& .MuiAutocomplete-listbox': {
-                                                                backgroundColor: '#2a2a3e',
-                                                                color: 'white',
-                                                            },
-                                                            '& .MuiAutocomplete-option': {
-                                            '&:hover': {
-                                                                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
                                                                 },
-                                                                '&.Mui-focused': {
-                                                                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                                                                '& .MuiAutocomplete-endAdornment': {
+                                                                    '& .MuiSvgIcon-root': {
+                                                                        color: 'rgba(255, 255, 255, 0.54)',
+                                                                    }
                                                                 }
+                                                            }}
+                                                        />
+                                                    )}
+                                                    sx={{
+                                                        '& .MuiAutocomplete-listbox': {
+                                                            backgroundColor: '#2a2a3e',
+                                                            color: 'white',
+                                                        },
+                                                        '& .MuiAutocomplete-option': {
+                                                            '&:hover': {
+                                                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                                            },
+                                                            '&.Mui-focused': {
+                                                                backgroundColor: 'rgba(76, 175, 80, 0.2)',
                                                             }
-                                                        }}
-                                                    />
-                                                </td>
-                                                <td 
-                                                    onClick={() => handleSongCellClick(idx, false)} 
-                                                    onContextMenu={(e) => handleSongTableMemberRightClick(e, idx, false)}
-                                                    style={{ 
-                                                        cursor: row.member ? 'context-menu' : (!isDragMode ? 'pointer' : 'default'), 
-                                                        minWidth: 120 
-                                                    }} 
-                                                    id={`songcell-${idx}`}
-                                                >
-                                                    {row.member ? (
-                                                        <DraggableImage 
-                                                            image={row.member} 
-                                                            isDragMode={isDragMode}
-                                                            onContextMenu={(e) => handleSongTableMemberRightClick(e, idx, false)}
-                                                        />
+                                                        }
+                                                    }}
+                                                />
+                                            </td>
+                                            <td 
+                                                onClick={() => handleSongCellClick(idx, false)} 
+                                                style={{ 
+                                                    cursor: 'pointer', 
+                                                    minWidth: 120,
+                                                    padding: '8px',
+                                                    verticalAlign: 'top'
+                                                }} 
+                                                id={`songcell-${idx}`}
+                                            >
+                                                <div className="member-grid" style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
+                                                    gap: '12px',
+                                                    minHeight: '80px',
+                                                    padding: '4px'
+                                                }}>
+                                                    {row.members.length > 0 ? (
+                                                        row.members.map(member => (
+                                                            <div 
+                                                                key={member.id} 
+                                                                style={{ 
+                                                                    position: 'relative',
+                                                                    width: '100%',
+                                                                    aspectRatio: '1/1.2' // Account for name below image
+                                                                }}
+                                                            >
+                                                                <DraggableImage 
+                                                                    image={member} 
+                                                                    isDragMode={false}
+                                                                    onContextMenu={(e) => handleSongTableMemberRightClick(e, idx, member.id, false)}
+                                                                    isInTable={true}
+                                                                />
+                                                            </div>
+                                                        ))
                                                     ) : (
-                                                        <span style={{ color: '#aaa' }}>Pilih Member</span>
+                                                        <span style={{ 
+                                                            color: '#aaa', 
+                                                            gridColumn: '1/-1', 
+                                                            alignSelf: 'center',
+                                                            textAlign: 'center',
+                                                            padding: '8px'
+                                                        }}>
+                                                            Pilih Member
+                                                        </span>
                                                     )}
-                                                </td>
-                                                <td 
-                                                    onClick={() => handleSongCellClick(idx, true)} 
-                                                    onContextMenu={(e) => handleSongTableMemberRightClick(e, idx, true)}
-                                                    style={{ 
-                                                        cursor: row.backupMember ? 'context-menu' : (!isDragMode ? 'pointer' : 'default'), 
-                                                        minWidth: 120 
-                                                    }} 
-                                                    id={`backupcell-${idx}`}
-                                                >
-                                                    {row.backupMember ? (
-                                                        <DraggableImage 
-                                                            image={row.backupMember} 
-                                                            isDragMode={isDragMode}
-                                                            onContextMenu={(e) => handleSongTableMemberRightClick(e, idx, true)}
-                                                        />
+                                                </div>
+                                            </td>
+                                            <td 
+                                                onClick={() => handleSongCellClick(idx, true)} 
+                                                style={{ 
+                                                    cursor: 'pointer', 
+                                                    minWidth: 120,
+                                                    padding: '8px',
+                                                    verticalAlign: 'top'
+                                                }} 
+                                                id={`backupcell-${idx}`}
+                                            >
+                                                <div className="member-grid" style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
+                                                    gap: '12px',
+                                                    minHeight: '80px',
+                                                    padding: '4px'
+                                                }}>
+                                                    {row.backupMembers.length > 0 ? (
+                                                        row.backupMembers.map(member => (
+                                                            <div 
+                                                                key={member.id} 
+                                                                style={{ 
+                                                                    position: 'relative',
+                                                                    width: '100%',
+                                                                    aspectRatio: '1/1.2' // Account for name below image
+                                                                }}
+                                                            >
+                                                                <DraggableImage 
+                                                                    image={member} 
+                                                                    isDragMode={false}
+                                                                    onContextMenu={(e) => handleSongTableMemberRightClick(e, idx, member.id, true)}
+                                                                    isInTable={true}
+                                                                />
+                                                            </div>
+                                                        ))
                                                     ) : (
-                                                        <span style={{ color: '#aaa' }}>Pilih Member</span>
+                                                        <span style={{ 
+                                                            color: '#aaa', 
+                                                            gridColumn: '1/-1', 
+                                                            alignSelf: 'center',
+                                                            textAlign: 'center',
+                                                            padding: '8px'
+                                                        }}>
+                                                            Pilih Member
+                                                        </span>
                                                     )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </DndContext>
-                        </div>
-                        <DndContext
-                            sensors={sensors}
-                            onDragStart={handleSongTableDragStart}
-                            onDragOver={handleSongTableDragOver}
-                            onDragEnd={handleSongTableDragEnd}
-                        >
-                            <div className="image-pool-container" style={{ marginTop: '20px' }}>
-                                <Typography variant="h6" color="white">Pool Member</Typography>
-                                <div className="image-pool">
-                                    {images.map(image => (
-                                        <DraggableImage 
-                                            key={image.id} 
-                                            image={image} 
-                                            isDragging={image.id === activeId} 
-                                            onImageClick={handleImageClick} 
-                                            isSelected={selectedImage?.id === image.id} 
-                                            isDragMode={isDragMode} 
-                                        />
+                                                </div>
+                                            </td>
+                                        </tr>
                                     ))}
-                                </div>
-                            </div>
-                            <DragOverlay>
-                                {activeId && isDragMode ? (
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="image-pool-container" style={{ marginTop: '20px' }}>
+                            <Typography variant="h6" color="white">Pool Member</Typography>
+                            <div className="image-pool">
+                                {images.map(image => (
                                     <DraggableImage 
-                                        image={images.find(img => img.id === activeId)} 
-                                        dragOverlay 
-                                        isDragMode={isDragMode} 
+                                        key={image.id} 
+                                        image={image} 
+                                        isDragging={false} 
+                                        onImageClick={handleImageClick} 
+                                        isSelected={selectedImage?.id === image.id} 
+                                        isDragMode={false}
+                                        isInTable={false}
                                     />
-                                ) : null}
-                            </DragOverlay>
-                        </DndContext>
+                                ))}
+                            </div>
+                        </div>
                     </Paper>
                 )}
             </div>
         </div>
-    );
+    </>
+  );
 };
 
 export default DreamSetlist;
