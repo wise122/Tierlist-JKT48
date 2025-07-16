@@ -614,7 +614,7 @@ const DreamSetlist = () => {
         }
     };
 
-    // Update handleSongTableMemberRightClick to handle arrays
+    // Update handleSongTableMemberRightClick to fix deletion issue
     const handleSongTableMemberRightClick = (e, idx, memberId, isBackup = false) => {
         e.preventDefault();
         const row = songTable[idx];
@@ -622,35 +622,51 @@ const DreamSetlist = () => {
         const member = memberArray.find(m => m.id === memberId);
         
         if (member) {
+            // Check if this member appears multiple times in the same cell
+            const memberCount = memberArray.filter(m => m.id === memberId).length;
+            
             setSongTable(prev => prev.map((row, i) => 
                 i === idx ? {
                     ...row,
-                    [isBackup ? 'backupMembers' : 'members']: memberArray.filter(m => m.id !== memberId)
+                    [isBackup ? 'backupMembers' : 'members']: memberArray.filter((m, index) => {
+                        // If member appears multiple times, only remove one instance
+                        if (m.id === memberId) {
+                            // Find the index of this specific instance
+                            const instanceIndex = memberArray.findIndex((instance, i) => 
+                                instance.id === memberId && i >= index
+                            );
+                            // Only remove if it's the last instance
+                            return instanceIndex !== index;
+                        }
+                        return true;
+                    })
                 } : row
             ));
             
-            // Add member back to the pool
-            setImages(prev => {
-                const otherImages = prev.filter(img => img.id !== member.id);
-                const updatedImage = {
-                    ...member,
-                    containerId: 'image-pool'
-                };
-                
-                const insertIndex = otherImages.findIndex(img => 
-                    img.containerId === 'image-pool' && img.originalIndex > member.originalIndex
-                );
-                
-                if (insertIndex === -1) {
-                    return [...otherImages, updatedImage];
-                } else {
-                    return [
-                        ...otherImages.slice(0, insertIndex),
-                        updatedImage,
-                        ...otherImages.slice(insertIndex)
-                    ];
-                }
-            });
+            // Only add back to pool if this was the last instance of the member
+            if (memberCount === 1) {
+                setImages(prev => {
+                    const otherImages = prev.filter(img => img.id !== member.id);
+                    const updatedImage = {
+                        ...member,
+                        containerId: member.containerId // Keep the original containerId
+                    };
+                    
+                    const insertIndex = otherImages.findIndex(img => 
+                        img.containerId === member.containerId && img.originalIndex > member.originalIndex
+                    );
+                    
+                    if (insertIndex === -1) {
+                        return [...otherImages, updatedImage];
+                    } else {
+                        return [
+                            ...otherImages.slice(0, insertIndex),
+                            updatedImage,
+                            ...otherImages.slice(insertIndex)
+                        ];
+                    }
+                });
+            }
         }
     };
 
@@ -741,7 +757,7 @@ const DreamSetlist = () => {
                                 2. Klik member untuk memilih
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                3. Klik kolom Member atau Backup untuk menempatkan
+                                3. Klik kolom Tim Inti atau Tim Backup untuk menempatkan (untuk Group Song mohon untuk hanya meletakan Member Center)
                             </Typography>
                             <Typography variant="body1">
                                 4. Klik kanan pada member untuk menghapus dari posisi
@@ -1207,8 +1223,8 @@ const DreamSetlist = () => {
                                     <tr>
                                         <th>No</th>
                                         <th>Judul Lagu</th>
-                                        <th>Member (Center for Group Song)</th>
-                                        <th>Backup Member</th>
+                                        <th>{rows.find(row => row.id === 'inti')?.name || 'Tim Inti'} </th>
+                                        <th>{rows.find(row => row.id === 'backup')?.name || 'Tim Backup'}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1366,20 +1382,33 @@ const DreamSetlist = () => {
                             </table>
                         </div>
                         <div className="image-pool-container" style={{ marginTop: '20px' }}>
-                            <Typography variant="h6" color="white">Pool Member</Typography>
-                            <div className="image-pool">
-                                {images.map(image => (
-                                    <DraggableImage 
-                                        key={image.id} 
-                                        image={image} 
-                                        isDragging={false} 
-                                        onImageClick={handleImageClick} 
-                                        isSelected={selectedImage?.id === image.id} 
-                                        isDragMode={false}
-                                        isInTable={false}
-                                    />
-                                ))}
-                            </div>
+                            {rows.map(row => (
+                                <div key={row.id} style={{ marginBottom: '20px' }}>
+                                    <Typography variant="h6" color="white" sx={{ mb: 1 }}>{row.name}</Typography>
+                                    <div className="image-pool" style={{ 
+                                        backgroundColor: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '8px',
+                                        padding: '12px'
+                                    }}>
+                                        {images.filter(image => image.containerId === row.id).map(image => (
+                                            <DraggableImage 
+                                                key={image.id} 
+                                                image={image} 
+                                                isDragging={false} 
+                                                onImageClick={handleImageClick} 
+                                                isSelected={selectedImage?.id === image.id} 
+                                                isDragMode={false}
+                                                isInTable={false}
+                                            />
+                                        ))}
+                                        {images.filter(image => image.containerId === row.id).length === 0 && (
+                                            <Typography variant="body2" color="rgba(255,255,255,0.5)" sx={{ p: 2, textAlign: 'center' }}>
+                                                No members in {row.name}
+                                            </Typography>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </Paper>
                 )}
