@@ -302,12 +302,12 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow }) => {
 
 const DreamSetlist = () => {
   // Add state for welcome dialog
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(true);
   
   // Step state: 0 = start, 1 = member select, 2 = song select
   const [step, setStep] = useState(0);
   const [memberType, setMemberType] = useState('active');
-  const [isDragMode, setIsDragMode] = useState(true);
+  const [isDragMode, setIsDragMode] = useState(false);
   const [rows, setRows] = useState(TIER_ROWS);
     const [images, setImages] = useState([]);
     const [activeId, setActiveId] = useState(null);
@@ -322,11 +322,7 @@ const DreamSetlist = () => {
 
   // Check if it's first visit when component mounts
   useEffect(() => {
-    const hasVisited = localStorage.getItem('dreamSetlistVisited');
-    if (!hasVisited) {
-      setShowWelcomeDialog(true);
-      localStorage.setItem('dreamSetlistVisited', 'true');
-    }
+    setShowWelcomeDialog(true);
   }, []);
 
   // Handle welcome dialog close
@@ -713,48 +709,42 @@ const DreamSetlist = () => {
                         gap: 1
                     }}>
                         <Info sx={{ color: '#4CAF50' }} />
-                        Welcome to Dream Setlist JKT48!
+                        Cara Menggunakan Dream Setlist
                     </DialogTitle>
                     <DialogContent sx={{ mt: 2 }}>
                         <Typography variant="h6" gutterBottom sx={{ color: '#4CAF50' }}>
-                            Create Your Perfect Setlist!
+                            Langkah 1: Pilih Member
                         </Typography>
                         
-                        <Typography variant="body1" paragraph>
-                            With Dream Setlist, you can:
-                        </Typography>
-                        
-                        <Box sx={{ ml: 2, mb: 2 }}>
+                        <Box sx={{ ml: 2, mb: 3 }}>
                             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                • Choose members from active, ex-members, or both
+                                1. Klik member untuk memilih
                             </Typography>
                             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                • Organize members into Main Team and Backup Team
+                                2. Klik Tim Inti atau Tim Backup untuk menempatkan member
                             </Typography>
                             <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                • Select songs and assign multiple members or a center to each song
+                                3. Klik kanan member untuk mengembalikan ke pool
                             </Typography>
-                            <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                • Save your setlist as an image
-                            </Typography>
+                         
                         </Box>
 
-                        <Typography variant="h6" gutterBottom sx={{ color: '#4CAF50', mt: 2 }}>
-                            How to Use:
+                        <Typography variant="h6" gutterBottom sx={{ color: '#4CAF50' }}>
+                            Langkah 2: Pilih Lagu & Posisi
                         </Typography>
                         
                         <Box sx={{ ml: 2 }}>
                             <Typography variant="body1" paragraph>
-                                1. Select member type (Active/Ex/All Members)
+                                1. Pilih lagu untuk setiap nomor urut
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                2. Arrange members into teams using drag & drop or click-to-place
+                                2. Klik member untuk memilih
                             </Typography>
                             <Typography variant="body1" paragraph>
-                                3. Choose songs and assign members to each position
+                                3. Klik kolom Member atau Backup untuk menempatkan
                             </Typography>
                             <Typography variant="body1">
-                                4. Save your creation as an image!
+                                4. Klik kanan pada member untuk menghapus dari posisi
                             </Typography>
                         </Box>
                     </DialogContent>
@@ -772,7 +762,7 @@ const DreamSetlist = () => {
                                 }
                             }}
                         >
-                            Let's Start!
+                            Mengerti
                         </Button>
                     </DialogActions>
                 </Dialog>
@@ -953,53 +943,32 @@ const DreamSetlist = () => {
                                     borderRadius: '16px',
                                     mb: 2
                                 }}>
-                                    <FormControlLabel
-                                        control={
-                                            <Switch 
-                                                checked={isDragMode} 
-                                                onChange={e => { 
-                                                    setIsDragMode(e.target.checked); 
-                                                    setSelectedImage(null); 
-                                                }} 
-                                                color="primary"
-                                                sx={{
-                                                    '& .MuiSwitch-switchBase.Mui-checked': {
-                                                        color: '#4CAF50'
-                                                    }
-                                                }}
-                                            />
-                                        }
-                                        label={
-                                            <Box sx={{ color: 'white', textAlign: 'left' }}>
-                                                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                                    {isDragMode ? 'Drag & Drop' : 'Click to Place'}
-                            </Typography>
-                                                {!isDragMode && (
-                                                    <Typography variant="caption" sx={{ display: 'block', color: '#aaa' }}>
-                                                        Click again to return to pool
-                            </Typography>
-                                                )}
-                        </Box>
-                                    }
-                                />
-                    <Button 
-                        variant="contained"
-                                    onClick={handleNextFromMember}
-                                    sx={{
-                                        py: 1.5,
-                                        px: 4,
-                                        borderRadius: 3,
-                                        backgroundColor: '#4CAF50',
-                                        fontSize: '1.1rem',
-                                        textTransform: 'none',
-                                        '&:hover': {
-                                            backgroundColor: '#45a049'
-                                        }
-                                    }}
-                                >
-                                    Next
-                    </Button>
-                            </Box>
+                                    <Box sx={{ color: 'white', textAlign: 'left' }}>
+                                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                                            Click to Place Mode
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ display: 'block', color: '#aaa' }}>
+                                            Click member to select, click again to return to pool
+                                        </Typography>
+                                    </Box>
+                                    <Button 
+                                        variant="contained"
+                                        onClick={handleNextFromMember}
+                                        sx={{
+                                            py: 1.5,
+                                            px: 4,
+                                            borderRadius: 3,
+                                            backgroundColor: '#4CAF50',
+                                            fontSize: '1.1rem',
+                                            textTransform: 'none',
+                                            '&:hover': {
+                                                backgroundColor: '#45a049'
+                                            }
+                                        }}
+                                    >
+                                        Next
+                                    </Button>
+                                </Box>
             <DndContext
                 sensors={sensors}
                 collisionDetection={pointerWithin}
