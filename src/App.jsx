@@ -14,6 +14,7 @@ import ViewportManager from './components/ViewportManager'
 import ThisOrThat from './This_or_That'
 import ToTAdmin from './ToT_admin'
 import Suggestion from './Suggestion'
+import DreamSetlist from './Dream_Setlist';
 import './styles/App.css'
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/tierlist" element={<Tierlist />} />
             <Route path="/tierlist_lagu" element={<TierlistLagu />} />
+            <Route path="/dream-setlist" element={<DreamSetlist />} />
             <Route path="/point-history" element={<PointHistory />} />
             <Route path="/this-or-that/play" element={<ThisOrThat />} />
             <Route path="/this-or-that/admin" element={<ToTAdmin />} />

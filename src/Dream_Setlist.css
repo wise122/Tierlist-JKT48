@@ -1,0 +1,324 @@
+/* Global styles */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* Header styles */
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background-color: rgba(42, 42, 62, 0.95);
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.header-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    margin-right: 1rem;
+}
+
+.header-title {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+
+/* Main container styles */
+
+.tierlist-page {
+    background-color: #1a1a2e;
+    min-height: 100vh;
+    padding: 20px;
+    color: white;
+}
+
+.tierlist-container {
+    padding: 2rem;
+    padding-top: calc(64px + 2rem);
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+
+/* Tier rows styles */
+
+.tier-row {
+    display: flex;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.tier-row:last-child {
+    border-bottom: none;
+}
+
+.tier-row:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.row-header {
+    width: 120px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.row-header span {
+    font-size: 1.1rem;
+}
+
+
+/* Droppable area styles */
+
+.droppable {
+    flex: 1;
+    min-height: 140px;
+    transition: background-color 0.2s ease;
+}
+
+.droppable.is-over {
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.tier-content {
+    flex: 1;
+    min-height: 130px;
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: rgba(26, 26, 46, 0.95);
+    border-radius: 0 12px 12px 0;
+}
+
+
+/* Member image styles */
+
+.member-image {
+    width: 100px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.2s ease;
+    background-color: #2a2a3e;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.member-image:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.member-image img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+}
+
+.member-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 6px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-image.dragging {
+    opacity: 0.3;
+    transform: scale(0.95);
+}
+
+.member-image.overlay {
+    cursor: grabbing;
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Button container styles */
+
+.tierlist-button-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.tierlist-button-container .action-button {
+    flex: 0 1 auto !important;
+    min-width: 150px !important;
+    margin: 0.5rem !important;
+}
+
+
+/* Image pool styles */
+
+.image-pool-container {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.image-pool-container h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.image-pool {
+    padding: 16px;
+    min-height: 130px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    background-color: rgba(26, 26, 46, 0.95);
+    border-radius: 12px;
+}
+
+
+/* Drag overlay styles */
+
+[data-dnd-kit-overlay] {
+    position: fixed !important;
+}
+
+
+/* Dialog styles */
+
+.MuiDialog-paper {
+    background-color: #2a2a3e !important;
+    color: white !important;
+}
+
+.MuiDialogTitle-root {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.MuiTextField-root {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.MuiInputLabel-root,
+.MuiInput-root,
+.MuiOutlinedInput-input,
+.MuiInputBase-input {
+    color: white !important;
+}
+
+.MuiInputLabel-root {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #90caf9 !important;
+}
+
+
+/* Switch styles */
+
+.MuiFormControlLabel-root {
+    margin-right: 2rem !important;
+}
+
+.MuiSwitch-root {
+    margin-right: 1rem !important;
+}
+
+/* Song table styles */
+.dreamsetlist-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: rgba(26, 26, 46, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.dreamsetlist-table th,
+.dreamsetlist-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dreamsetlist-table th {
+    background-color: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.dreamsetlist-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .tierlist-page {
+        padding: 10px;
+    }
+
+    .row-header {
+        width: 80px;
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .member-image {
+        width: 80px;
+        height: 100px;
+    }
+
+    .member-image img {
+        height: 80px;
+    }
+
+    .tier-content,
+    .image-pool {
+        padding: 12px;
+        gap: 8px;
+    }
+}

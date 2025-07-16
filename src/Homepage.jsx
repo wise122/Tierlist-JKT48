@@ -38,9 +38,9 @@ const Homepage = () => {
                 </button>
                 <button 
                     className="nav-button"
-                    onClick={() => navigate('/point-history')}
+                    onClick={() => navigate('/dream-setlist')}
                 >
-                    Points History
+                    Dream Setlist
                 </button>
                 <button 
                     className="nav-button"
