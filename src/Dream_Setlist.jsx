@@ -317,7 +317,6 @@ const DreamSetlist = () => {
   const tierlistRef = useRef(null);
     const [searchTerm, setSearchTerm] = useState('');
   const [filteredImages, setFilteredImages] = useState([]);
-
   const navigate = useNavigate();
 
   // Check if it's first visit when component mounts
@@ -460,46 +459,17 @@ const DreamSetlist = () => {
     };
 
   // Click-to-assign for member selection
-    const handleImageClick = (image) => {
-        if (!isDragMode) {
-            if (selectedImage?.id === image.id) {
-                // If clicking the same image that's selected, move it to pool if not already there
-                if (image.containerId !== 'image-pool') {
-                setImages(prev => {
-                        // Get all images except the one being moved
-                        const otherImages = prev.filter(img => img.id !== image.id);
-                        
-                        // Create updated version of the image for the pool
-                        const updatedImage = {
-                            ...image,
-                            containerId: 'image-pool'
-                        };
-                        
-                        // Find the correct position based on originalIndex
-                        const insertIndex = otherImages.findIndex(img => 
-                            img.containerId === 'image-pool' && img.originalIndex > image.originalIndex
-                        );
-                        
-                        if (insertIndex === -1) {
-                            // If no higher index found, append to the end
-                            return [...otherImages, updatedImage];
-                        } else {
-                            // Insert at the correct position
-                            return [
-                                ...otherImages.slice(0, insertIndex),
-                                updatedImage,
-                                ...otherImages.slice(insertIndex)
-                            ];
-                        }
-                    });
-                }
-                setSelectedImage(null);
-            } else {
-                // If clicking a different image, select it
-                setSelectedImage(image);
-            }
-        }
-    };
+  const handleImageClick = (image) => {
+      if (!isDragMode) {
+          if (selectedImage?.id === image.id) {
+              // If clicking the same image that's selected, just deselect it
+              setSelectedImage(null);
+          } else {
+              // If clicking a different image, select it
+              setSelectedImage(image);
+          }
+      }
+  };
 
     const handleImageRightClick = (e, image) => {
         e.preventDefault(); // Prevent default context menu
@@ -622,14 +592,18 @@ const DreamSetlist = () => {
         const member = memberArray.find(m => m.id === memberId);
         
         if (member) {
-            // Check if this member appears multiple times in the same cell
-            const memberCount = memberArray.filter(m => m.id === memberId).length;
+            // Check if this member appears multiple times in the song table
+            const totalAppearances = songTable.reduce((count, row) => {
+                const inMembers = row.members.filter(m => m.id === memberId).length;
+                const inBackup = row.backupMembers.filter(m => m.id === memberId).length;
+                return count + inMembers + inBackup;
+            }, 0);
             
+            // Remove one instance from the current cell
             setSongTable(prev => prev.map((row, i) => 
                 i === idx ? {
                     ...row,
                     [isBackup ? 'backupMembers' : 'members']: memberArray.filter((m, index) => {
-                        // If member appears multiple times, only remove one instance
                         if (m.id === memberId) {
                             // Find the index of this specific instance
                             const instanceIndex = memberArray.findIndex((instance, i) => 
@@ -643,29 +617,25 @@ const DreamSetlist = () => {
                 } : row
             ));
             
-            // Only add back to pool if this was the last instance of the member
-            if (memberCount === 1) {
-                setImages(prev => {
-                    const otherImages = prev.filter(img => img.id !== member.id);
-                    const updatedImage = {
-                        ...member,
-                        containerId: member.containerId // Keep the original containerId
-                    };
-                    
-                    const insertIndex = otherImages.findIndex(img => 
-                        img.containerId === member.containerId && img.originalIndex > member.originalIndex
-                    );
-                    
-                    if (insertIndex === -1) {
+            // If this was the last instance of the member in the song table,
+            // return it to its original tier pool
+            if (totalAppearances === 1) {
+                const originalTier = images.find(img => img.id === memberId)?.containerId;
+                if (originalTier === 'inti' || originalTier === 'backup') {
+                    setImages(prev => {
+                        // Get all images except the one being moved
+                        const otherImages = prev.filter(img => img.id !== memberId);
+                        
+                        // Create updated version of the image for its original tier
+                        const updatedImage = {
+                            ...member,
+                            containerId: originalTier
+                        };
+                        
+                        // Return new array with member back in its original tier
                         return [...otherImages, updatedImage];
-                    } else {
-                        return [
-                            ...otherImages.slice(0, insertIndex),
-                            updatedImage,
-                            ...otherImages.slice(insertIndex)
-                        ];
-                    }
-                });
+                    });
+                }
             }
         }
     };
