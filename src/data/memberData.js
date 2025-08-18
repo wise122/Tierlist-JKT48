@@ -22,7 +22,7 @@ export const activeMemberFiles = [
     'Gen12_fritzy_rosmerian.jpg', 'Gen12_hillary_abigail.jpg',
     'Gen12_jazzlyn_trisha.jpg', 'Gen12_michelle_levia.jpg',
     'Gen12_nayla_suji.jpg', 'Gen12_nina_tutachia.jpg',
-    'Gen12_oline_manuel.jpg', 'Gen12_regina_wilian.jpg',
+    'Gen12_oline_manuel.jpg', 
     'Gen12_ribka_budiman.jpg', 'Gen12_shabilqis_naila.jpg',
     'Gen12_victoria_kimberly.jpg',
     'Gen13_Astrella_Virgiananda.jpg', 'Gen13_Aulia_Riza.jpg',
@@ -121,7 +121,7 @@ export const exMemberFiles = [
     'Gen11/Gen11_aulia_asyira.webp', 'Gen11/Gen11_jeane_victoria.webp',
 
     // Gen12 members
-    'Gen12/Gen12_aisa_maharani.webp', 'Gen12/Gen12_letycia_moreen.webp',
+    'Gen12/Gen12_aisa_maharani.webp', 'Gen12/Gen12_letycia_moreen.webp', 'Gen12_regina_wilian.jpg',
 
     // JKT48V members
     'JKT48V_GEN1/JKT48V_Gen1_Kanaia_Asa.webp'
