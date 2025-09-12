@@ -9,7 +9,7 @@ export const activeMemberFiles = [
     'Gen9_indah_cahya.jpg', 'Gen9_kathrina_irene.jpg',
     'Gen9_marsha_lenathea.jpg',
     'Gen10_amanda_sukma.jpg', 'Gen10_aurellia.jpg',
-    'Gen10_gabriela_abigail.jpg', 'Gen10_indira_seruni.jpg',
+    'Gen10_gabriela_abigail.jpg',
     'Gen10_jesslyn_elly.jpg', 'Gen10_raisha_syifa.jpg',
     'Gen11_alya_amanda.jpg', 'Gen11_anindya_ramadhani.jpg',
     'Gen11_cathleen_nixie.jpg', 'Gen11_celline_thefani.jpg',
@@ -115,7 +115,7 @@ export const exMemberFiles = [
 
     // Gen10 members
     'Gen10/Gen10_abieza_syabira.webp', 'Gen10/Gen10_alia_giselle.jpg', 'Gen10/Gen10_callista_alifia.webp',
-    'Gen10/Gen10_danessa_valerie.webp', 'Gen10/Gen10_naura_safinatunnajah.webp',
+    'Gen10/Gen10_danessa_valerie.webp', 'Gen10/Gen10_naura_safinatunnajah.webp',  'Gen10/Gen10_indira_seruni.jpg',
 
     // Gen11 members
     'Gen11/Gen11_aulia_asyira.webp', 'Gen11/Gen11_jeane_victoria.webp',
