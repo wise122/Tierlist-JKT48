@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     DndContext,
@@ -265,6 +265,11 @@ const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelec
 const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow, children }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
+    const headerRef = useRef(null);
+    const nameRef = useRef(null);
+    const buttonRef = useRef(null);
+    const baseFontPxRef = useRef(null);
+    const [nameFontPx, setNameFontPx] = useState(null);
     
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -299,20 +304,101 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow, children 
 
     const textColor = getContrastColor(row.color);
 
+    // Dynamically fit the tier name text within the header without moving the button
+    const adjustNameFont = () => {
+        const headerEl = headerRef.current;
+        const nameEl = nameRef.current;
+        const buttonEl = buttonRef.current;
+        if (!headerEl || !nameEl || !buttonEl) return;
+
+        const cs = window.getComputedStyle(headerEl);
+        const padLeft = parseFloat(cs.paddingLeft || '0');
+        const padRight = parseFloat(cs.paddingRight || '0');
+        const contentWidth = headerEl.clientWidth - padLeft - padRight;
+        const buttonWidth = buttonEl.offsetWidth || 0;
+        const gap = 8; // margin-left on button
+        const available = Math.max(0, contentWidth - buttonWidth - gap);
+
+        // Determine base font size from computed style once
+        if (!baseFontPxRef.current) {
+            const nameCs = window.getComputedStyle(nameEl);
+            baseFontPxRef.current = parseFloat(nameCs.fontSize || '18'); // default ~1.1rem
+        }
+
+        // Start from base
+        let target = baseFontPxRef.current;
+        nameEl.style.fontSize = `${target}px`;
+
+        // Measure the longest word against available width so we avoid mid-word breaks
+        const measure = () => {
+            const nameCs = window.getComputedStyle(nameEl);
+            const fontFamily = nameCs.fontFamily || 'sans-serif';
+            const fontWeight = nameCs.fontWeight || '400';
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.font = `${fontWeight} ${baseFontPxRef.current}px ${fontFamily}`;
+                const words = String(row.name || '').split(/\s+/).filter(Boolean);
+                const maxWordWidth = words.reduce((max, w) => Math.max(max, ctx.measureText(w).width), 0);
+                if (maxWordWidth > 0 && available > 0 && maxWordWidth > available) {
+                    const ratio = available / maxWordWidth;
+                    target = Math.max(10, Math.floor(baseFontPxRef.current * ratio));
+                } else {
+                    target = baseFontPxRef.current;
+                }
+            }
+            setNameFontPx(target);
+        };
+
+        requestAnimationFrame(measure);
+    };
+
+    useLayoutEffect(() => {
+        adjustNameFont();
+        const onResize = () => adjustNameFont();
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        adjustNameFont();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [row.name]);
+
     return (
         <div 
             className="row-header" 
             style={{ 
                 backgroundColor: row.color,
                 borderTopLeftRadius: isFirstRow ? '8px' : '0',
-                borderTopRightRadius: '0'
+                borderTopRightRadius: '0',
+                overflow: 'hidden' // ensure contents don't spill out
             }}
+            ref={headerRef}
         >
-            <span style={{ color: textColor }}>{row.name}</span>
+            <span 
+                style={{ 
+                    color: textColor,
+                    flex: 1,
+                    minWidth: 0,
+                    // Allow wrapping instead of truncating
+                    whiteSpace: 'normal',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                    fontSize: nameFontPx ? `${nameFontPx}px` : undefined
+                }}
+                ref={nameRef}
+                title={row.name}
+            >
+                {row.name}
+            </span>
             <IconButton 
                 onClick={handleClick}
                 size="small"
-                style={{ color: textColor }}
+                style={{ color: textColor, flex: '0 0 auto', marginLeft: 8 }}
+                ref={buttonRef}
             >
                 <Settings />
             </IconButton>

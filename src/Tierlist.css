@@ -81,6 +81,28 @@
     font-size: 1.1rem;
 }
 
+/* Editable title input visibility */
+.tierlist-title {
+    box-sizing: border-box;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    outline: none; /* we'll style focus below */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    cursor: text;
+}
+
+.tierlist-title::placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.tierlist-title:focus {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
 
 /* Droppable area styles */
 

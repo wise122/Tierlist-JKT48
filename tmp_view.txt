@@ -1,0 +1,21 @@
+                            marginTop: '0',
+                            marginBottom: '5px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            width: '100%'
+                        }}>
+                            <input
+                                ref={titleInputRef}
+                                type="text"
+                                className="tierlist-title"
+                                value={tierlistTitle}
+                                onChange={(e) => setTierlistTitle(e.target.value)}
+                                placeholder={`Click Here to Add Title}
+                                spellCheck="false"
+                                style={{ 
+                                    width: `${inputWidth}px`,
+                                    fontSize: '32px',
+                                    padding: '8px 12px'
+                                }}
+                                maxLength={90}
+                            />

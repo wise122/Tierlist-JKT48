@@ -15,6 +15,10 @@ const Homepage = () => {
     const [drafts, setDrafts] = useState([]);
     const navigate = useNavigate();
 
+    // Configure how many standard and JKT48V generations to show in dropdowns
+    const STANDARD_GEN_COUNT = 13; // Gen1..Gen13
+    const V_GEN_COUNT = 1;         // JKT48V Gen1..GenV_COUNT
+
     useEffect(() => {
         // Reset viewport meta tag
         const viewport = document.querySelector('meta[name=viewport]');
@@ -270,10 +274,12 @@ const Homepage = () => {
                         className="member-dropdown"
                     >
                         <option value="all">All Generations</option>
-                        {Array.from({ length: 13 }, (_, i) => i + 1).map(gen => (
-                            <option key={gen} value={`gen${gen}`}>Generation {gen}</option>
+                        {Array.from({ length: STANDARD_GEN_COUNT }, (_, i) => i + 1).map(gen => (
+                            <option key={`std-${gen}`} value={`gen${gen}`}>Generation {gen}</option>
                         ))}
-                        <option value="genv1">JKT48V Gen 1</option>
+                        {Array.from({ length: V_GEN_COUNT }, (_, i) => i + 1).map(vgen => (
+                            <option key={`v-${vgen}`} value={`genv${vgen}`}>JKT48V Gen {vgen}</option>
+                        ))}
                     </select>
                 </div>
 
