@@ -33,6 +33,7 @@ export const mvFiles = [
     'Musim_yang_Selanjutnya_(Tsugi_no_Season).webp',
     'Papan_Penanda_Isi_Hati.webp',
     'Pareo_adalah_Emerald.webp',
+    'Bernadya, JKT48 - Percik Kecil (Official Music Video).webp',
     'Ponytail_dan_ShuShu.webp',
     'PunkishV.webp',
     'Rapsodi.webp',

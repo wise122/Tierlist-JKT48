@@ -422,7 +422,10 @@ const dreamSetlistSongs = [
   { id: 'song423', title: 'GO AND FIGHT!' },
   { id: 'song424', title: 'Waktunya Membuktikan' },
   { id: 'song425', title: 'Raja Hati' },
-  { id: 'song426', title: 'Oh My Pumpkin!' },
+  { id: 'song426', title: 'Percik Kecil' },
+  { id: 'song427', title: 'Ada Aku' },
+  { id: 'song428', title: 'Dream!' },
+  { id: 'song429', title: 'Oh My Pumpkin!' },
 
   // ... (continue for all songs provided by the user, incrementing id)
 ];
