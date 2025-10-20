@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Homepage.css';
+import './HomepageTierlist.css';
 import logo from './assets/icon/TierlistIcon.png';
 import { setlistSongs } from './data/setlistSongs';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,6 +14,10 @@ const Homepage = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [drafts, setDrafts] = useState([]);
     const navigate = useNavigate();
+
+    // Configure how many standard and JKT48V generations to show in dropdowns
+    const STANDARD_GEN_COUNT = 13; // Gen1..Gen13
+    const V_GEN_COUNT = 1;         // JKT48V Gen1..GenV_COUNT
 
     useEffect(() => {
         // Reset viewport meta tag
@@ -144,7 +148,7 @@ const Homepage = () => {
                     position: 'absolute',
                     top: '20px',
                     left: '20px',
-                    backgroundColor: '#be2016',
+                    backgroundColor: '#E50014',
                     color: 'white',
                     border: 'none',
                     padding: '10px 20px',
@@ -270,10 +274,12 @@ const Homepage = () => {
                         className="member-dropdown"
                     >
                         <option value="all">All Generations</option>
-                        {Array.from({ length: 13 }, (_, i) => i + 1).map(gen => (
-                            <option key={gen} value={`gen${gen}`}>Generation {gen}</option>
+                        {Array.from({ length: STANDARD_GEN_COUNT }, (_, i) => i + 1).map(gen => (
+                            <option key={`std-${gen}`} value={`gen${gen}`}>Generation {gen}</option>
                         ))}
-                        <option value="genv1">JKT48V Gen 1</option>
+                        {Array.from({ length: V_GEN_COUNT }, (_, i) => i + 1).map(vgen => (
+                            <option key={`v-${vgen}`} value={`genv${vgen}`}>JKT48V Gen {vgen}</option>
+                        ))}
                     </select>
                 </div>
 

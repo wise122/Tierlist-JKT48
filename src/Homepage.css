@@ -10,7 +10,10 @@
 
 .app-logo {
     width: 240px;
-    height: 240px;
+    height: auto;          /* keep aspect ratio of the image */
+    max-height: 40vh;      /* prevent it from growing too tall */
+    object-fit: contain;   /* fit within box without distortion */
+    display: block;        /* avoid baseline gap that can look crooked */
     margin-bottom: 1.5rem;
     animation: logo-pulse 2s ease-in-out infinite;
 }
@@ -97,7 +100,7 @@
 .start-button {
     width: 100%;
     padding: 15px 20px;
-    background-color: #be2016;
+    background-color: #E50014;
     color: white;
     border: none;
     border-radius: 5px;
@@ -115,7 +118,7 @@
 }
 
 .start-button:hover:not(:disabled) {
-    background-color: #a11b13;
+    background-color: #C40012; /* darker shade of #E50014 */
     transform: scale(1.02);
 }
 
@@ -135,7 +138,7 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    background-color: #be2016;
+    background-color: #E50014;
     color: white;
     transition: all 0.3s ease;
     text-decoration: none;
@@ -149,7 +152,7 @@
 }
 
 .nav-button:hover {
-    background-color: #a11b13;
+    background-color: #C40012;
     transform: scale(1.02);
 }
 

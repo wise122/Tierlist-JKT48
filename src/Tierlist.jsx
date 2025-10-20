@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     DndContext,
@@ -229,12 +229,20 @@ const DraggableImage = ({ image, isDragging, dragOverlay, onImageClick, onContex
         border: isSelected ? '2px solid #4CAF50' : 'none'
     };
 
+    const handleContextMenu = (e) => {
+        e.preventDefault(); // Prevent default context menu
+        // Allow right-click return in both modes when not in image pool
+        if (image.containerId !== 'image-pool') {
+            onContextMenu && onContextMenu(e, image);
+        }
+    };
+
     return (
         <div
             className={`member-image ${isDragging ? 'dragging' : ''} ${dragOverlay ? 'overlay' : ''}`}
             style={style}
             onClick={() => !isDragMode && onImageClick && onImageClick(image)}
-            onContextMenu={(e) => onContextMenu && onContextMenu(e, image)}
+            onContextMenu={handleContextMenu}
         >
             <img src={image.src} alt={image.name} />
             <div className="member-name">{image.name}</div>
@@ -291,6 +299,11 @@ const SortableImage = ({ image, isDragging, onImageClick, onContextMenu, isSelec
 const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
+    const headerRef = useRef(null);
+    const nameRef = useRef(null);
+    const buttonRef = useRef(null);
+    const baseFontPxRef = useRef(null);
+    const [nameFontPx, setNameFontPx] = useState(null);
     
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -325,20 +338,102 @@ const TierRow = ({ row, onMove, onEdit, onClear, onDelete, isFirstRow }) => {
 
     const textColor = getContrastColor(row.color);
 
+    // Dynamically fit the tier name text within the header without moving the button
+    const adjustNameFont = () => {
+        const headerEl = headerRef.current;
+        const nameEl = nameRef.current;
+        const buttonEl = buttonRef.current;
+        if (!headerEl || !nameEl || !buttonEl) return;
+
+        const cs = window.getComputedStyle(headerEl);
+        const padLeft = parseFloat(cs.paddingLeft || '0');
+        const padRight = parseFloat(cs.paddingRight || '0');
+        const contentWidth = headerEl.clientWidth - padLeft - padRight;
+        const buttonWidth = buttonEl.offsetWidth || 0;
+        const gap = 8; // margin-left on button
+        const available = Math.max(0, contentWidth - buttonWidth - gap);
+
+        // Determine base font size from computed style once
+        if (!baseFontPxRef.current) {
+            const nameCs = window.getComputedStyle(nameEl);
+            baseFontPxRef.current = parseFloat(nameCs.fontSize || '18'); // default ~1.1rem
+        }
+
+        // Start from base
+        let target = baseFontPxRef.current;
+        nameEl.style.fontSize = `${target}px`;
+
+        // Measure the longest word against available width so we avoid mid-word breaks
+        const measure = () => {
+            const nameCs = window.getComputedStyle(nameEl);
+            const fontFamily = nameCs.fontFamily || 'sans-serif';
+            const fontWeight = nameCs.fontWeight || '400';
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.font = `${fontWeight} ${baseFontPxRef.current}px ${fontFamily}`;
+                const words = String(row.name || '').split(/\s+/).filter(Boolean);
+                const maxWordWidth = words.reduce((max, w) => Math.max(max, ctx.measureText(w).width), 0);
+                if (maxWordWidth > 0 && available > 0 && maxWordWidth > available) {
+                    const ratio = available / maxWordWidth;
+                    target = Math.max(10, Math.floor(baseFontPxRef.current * ratio));
+                } else {
+                    target = baseFontPxRef.current;
+                }
+            }
+            setNameFontPx(target);
+        };
+
+        // Use rAF to ensure DOM styles applied before measuring
+        requestAnimationFrame(measure);
+    };
+
+    useLayoutEffect(() => {
+        adjustNameFont();
+        const onResize = () => adjustNameFont();
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        adjustNameFont();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [row.name]);
+
     return (
         <div 
             className="row-header" 
             style={{ 
                 backgroundColor: row.color,
                 borderTopLeftRadius: isFirstRow ? '8px' : '0',
-                borderTopRightRadius: '0'
+                borderTopRightRadius: '0',
+                overflow: 'hidden' // ensure contents don't spill out
             }}
+            ref={headerRef}
         >
-            <span style={{ color: textColor }}>{row.name}</span>
+            <span 
+                style={{ 
+                    color: textColor,
+                    flex: 1,
+                    minWidth: 0,
+                    // Allow wrapping instead of truncating
+                    whiteSpace: 'normal',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                    fontSize: nameFontPx ? `${nameFontPx}px` : undefined
+                }}
+                ref={nameRef}
+                title={row.name}
+            >
+                {row.name}
+            </span>
             <IconButton 
                 onClick={handleClick}
                 size="small"
-                style={{ color: textColor }}
+                style={{ color: textColor, flex: '0 0 auto', marginLeft: 8 }}
+                ref={buttonRef}
             >
                 <Settings />
             </IconButton>
@@ -524,13 +619,24 @@ const Tierlist = () => {
             // Helper function to check if a filename matches the generation
             const matchesGeneration = (filename) => {
                 if (generation === 'all') return true;
-                if (generation === 'genv1') {
-                    const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                    return baseFilename.startsWith('JKT48V_Gen1_');
-                }
-                const prefix = `Gen${generation.slice(3)}_`;
+
                 const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                return baseFilename.startsWith(prefix);
+
+                // Handle JKT48V generations generically: genv1, genv2, ...
+                if (generation.toLowerCase().startsWith('genv')) {
+                    const vGenNumber = generation.slice(4); // after 'genv'
+                    const vPrefix = `JKT48V_Gen${vGenNumber}_`;
+                    return baseFilename.startsWith(vPrefix);
+                }
+
+                // Handle regular generations: gen1, gen2, ...
+                if (generation.toLowerCase().startsWith('gen')) {
+                    const prefix = `Gen${generation.slice(3)}_`;
+                    return baseFilename.startsWith(prefix);
+                }
+
+                // Fallback: if pattern unknown, include
+                return true;
             };
             
             let currentIndex = 0;
@@ -621,14 +727,28 @@ const Tierlist = () => {
     };
 
     const handleDragOver = (event) => {
-        if (!isDragMode) return;  // Add this line to prevent drag in click mode
+        if (!isDragMode) return;
         const { active, over } = event;
         if (!over) return;
         
         const overId = over.id;
         
+        // If we're over another image
+        if (images.find(img => img.id === overId)) {
+            const activeImage = images.find(img => img.id === active.id);
+            const overImage = images.find(img => img.id === overId);
+            
+            // If they're in the same container
+            if (activeImage.containerId === overImage.containerId) {
+                setImages(prev => {
+                    const activeIndex = prev.findIndex(img => img.id === active.id);
+                    const overIndex = prev.findIndex(img => img.id === overId);
+                    return arrayMove(prev, activeIndex, overIndex);
+                });
+            }
+        }
         // If we're over a droppable container
-        if (rows.find(row => row.id === overId) || overId === 'image-pool') {
+        else if (rows.find(row => row.id === overId) || overId === 'image-pool') {
             setImages(prev => {
                 const activeImage = prev.find(img => img.id === active.id);
                 if (activeImage.containerId === overId) return prev; // No change if same container
@@ -670,11 +790,26 @@ const Tierlist = () => {
         }
 
         const overId = over.id;
-        const activeImage = images.find(img => img.id === active.id);
-        const overContainer = overId;
         
-        // Check if moving to a different container
-        if (rows.find(row => row.id === overId) || overId === 'image-pool') {
+        // If we're over another image
+        if (images.find(img => img.id === overId)) {
+            const activeImage = images.find(img => img.id === active.id);
+            const overImage = images.find(img => img.id === overId);
+            
+            // If they're in the same container
+            if (activeImage.containerId === overImage.containerId) {
+                setImages(prev => {
+                    const activeIndex = prev.findIndex(img => img.id === active.id);
+                    const overIndex = prev.findIndex(img => img.id === overId);
+                    return arrayMove(prev, activeIndex, overIndex);
+                });
+            }
+        }
+        // If we're over a droppable container
+        else if (rows.find(row => row.id === overId) || overId === 'image-pool') {
+            const activeImage = images.find(img => img.id === active.id);
+            const overContainer = overId;
+            
             setImages(prev => {
                 // Remove the dragged image from its current position
                 const newImages = prev.filter(img => img.id !== active.id);
@@ -783,7 +918,9 @@ const Tierlist = () => {
             return true;
         });
     
-        if (containerId === 'image-pool' || !isDragMode) {
+        if (containerId === 'image-pool') {
+            // Sort the image pool by immutable originalIndex so items
+            // return to their initial positions when sent back to pool
             return filteredImages.sort((a, b) => a.originalIndex - b.originalIndex);
         }
     
@@ -844,13 +981,24 @@ const Tierlist = () => {
             // Helper function to check if a filename matches the generation
             const matchesGeneration = (filename) => {
                 if (generation === 'all') return true;
-                if (generation === 'genv1') {
-                    const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                    return baseFilename.startsWith('JKT48V_Gen1_');
-                }
-                const prefix = `Gen${generation.slice(3)}_`;
+
                 const baseFilename = filename.includes('/') ? filename.split('/').pop() : filename;
-                return baseFilename.startsWith(prefix);
+
+                // Handle JKT48V generations generically: genv1, genv2, ...
+                if (generation.toLowerCase().startsWith('genv')) {
+                    const vGenNumber = generation.slice(4); // after 'genv'
+                    const vPrefix = `JKT48V_Gen${vGenNumber}_`;
+                    return baseFilename.startsWith(vPrefix);
+                }
+
+                // Handle regular generations: gen1, gen2, ...
+                if (generation.toLowerCase().startsWith('gen')) {
+                    const prefix = `Gen${generation.slice(3)}_`;
+                    return baseFilename.startsWith(prefix);
+                }
+
+                // Fallback: if pattern unknown, include
+                return true;
             };
             
             let currentIndex = 0;
@@ -1063,7 +1211,15 @@ const Tierlist = () => {
 
     const handleImageRightClick = (e, image) => {
         e.preventDefault(); // Prevent the default context menu
-        if (!isDragMode) {
+        if (isDragMode) {
+            if (image.containerId !== 'image-pool') {
+                setImages(prev => prev.map(img => 
+                    img.id === image.id 
+                        ? { ...img, containerId: 'image-pool' }
+                        : img
+                ));
+            }
+        } else {
             if (image.containerId !== 'image-pool') {
                 setImages(prev => prev.map(img => 
                     img.id === image.id 
@@ -1079,26 +1235,35 @@ const Tierlist = () => {
     const handleTierClick = (tierId) => {
         if (!isDragMode && selectedImage) {
             setImages(prev => {
-                // Find the maximum originalIndex in the target tier
-                const maxIndex = Math.max(...prev
-                    .filter(img => img.containerId === tierId)
-                    .map(img => img.originalIndex), -1);
-                
-                // Create new array with updated image
-                const newImages = prev.map(img => 
-                    img.id === selectedImage.id 
-                        ? { 
-                            ...img, 
-                            containerId: tierId,
-                            originalIndex: maxIndex + 1  // Set new index higher than existing ones
-                        }
-                        : img
+                const activeImage = prev.find(img => img.id === selectedImage.id);
+                if (!activeImage) return prev;
+                if (activeImage.containerId === tierId) return prev; // No change
+
+                // Remove the image from its current position
+                const newImages = prev.filter(img => img.id !== selectedImage.id);
+
+                // Find all images currently in the target container
+                const containerImages = newImages.filter(img => img.containerId === tierId);
+
+                // Find the index after the last image in the target container (within array order)
+                const lastContainerImageIndex = newImages.findIndex(img => 
+                    img.containerId === tierId &&
+                    containerImages.indexOf(img) === containerImages.length - 1
                 );
-                
-                // Clear selection after placing
-                setTimeout(() => setSelectedImage(null), 50);
+
+                const updatedImage = { ...activeImage, containerId: tierId };
+
+                // If container empty, or we couldn't find the last item, append to end
+                if (containerImages.length === 0 || lastContainerImageIndex === -1) {
+                    return [...newImages, updatedImage];
+                }
+
+                // Insert right after the last image of that container
+                newImages.splice(lastContainerImageIndex + 1, 0, updatedImage);
                 return newImages;
             });
+            // Clear selection after placing
+            setTimeout(() => setSelectedImage(null), 50);
         }
     };
 
@@ -1146,9 +1311,8 @@ const Tierlist = () => {
         <div className="tierlist-page">
             <header className="header">
                 <IconButton 
-                    className="back-button"
-                    onClick={() => navigate(-1)}
-                    size="large"
+                    onClick={() => navigate(-1)} 
+                    sx={{ color: 'white', marginRight: 1 }}
                 >
                     <ArrowBack />
                 </IconButton>
@@ -1243,7 +1407,7 @@ const Tierlist = () => {
                                 className="tierlist-title"
                                 value={tierlistTitle}
                                 onChange={(e) => setTierlistTitle(e.target.value)}
-                                placeholder={`My ${getTierlistTypeDisplay()} Tierlist`}
+                                placeholder={"Click Here to Add Title"}
                                 spellCheck="false"
                                 style={{ 
                                     width: `${inputWidth}px`,
@@ -1295,7 +1459,7 @@ const Tierlist = () => {
                         ))}
                     </div>
 
-                    <div className="button-container">
+                    <div className="tierlist-button-container">
                         <FormControlLabel
                             control={
                                 <Switch

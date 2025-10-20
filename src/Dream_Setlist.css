@@ -39,6 +39,13 @@
 
 /* Main container styles */
 
+.tierlist-page {
+    background-color: #1a1a2e;
+    min-height: 100vh;
+    padding: 20px;
+    color: white;
+}
+
 .tierlist-container {
     padding: 2rem;
     padding-top: calc(64px + 2rem);
@@ -50,57 +57,35 @@
 
 /* Tier rows styles */
 
-.tier-rows-container {
-    background-color: rgba(26, 26, 46, 0.95);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 2rem;
-}
-
 .tier-row {
     display: flex;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: rgba(42, 42, 62, 0.75);
+    margin-bottom: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
 }
 
 .tier-row:last-child {
     border-bottom: none;
 }
 
+.tier-row:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
 .row-header {
+    width: 120px;
+    padding: 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
-    width: 150px;
     font-weight: bold;
-    flex-shrink: 0;
+    font-size: 1.1rem;
 }
 
 .row-header span {
     font-size: 1.1rem;
-}
-
-/* Editable title input visibility */
-.tierlist-title {
-    box-sizing: border-box;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    outline: none; /* we'll style focus below */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-    cursor: text;
-}
-
-.tierlist-title::placeholder {
-    color: rgba(255, 255, 255, 0.65);
-}
-
-.tierlist-title:focus {
-    border-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.12);
 }
 
 
@@ -113,16 +98,19 @@
 }
 
 .droppable.is-over {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(76, 175, 80, 0.1);
 }
 
 .tier-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
-    min-height: 140px;
-    background-color: rgba(255, 255, 255, 0.05);
+    flex: 1;
+    min-height: 130px;
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: rgba(26, 26, 46, 0.95);
+    border-radius: 0 12px 12px 0;
 }
 
 
@@ -131,46 +119,49 @@
 .member-image {
     width: 100px;
     height: 120px;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
+    position: relative;
+    transition: all 0.2s ease;
     background-color: #2a2a3e;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, opacity 0.2s ease;
-    cursor: grab;
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
 }
 
-.member-image.dragging {
-    opacity: 0.5;
-    transform: scale(1.05);
+.member-image:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .member-image img {
     width: 100%;
-    height: 120px;
+    height: 100px;
     object-fit: cover;
-    object-position: top center;
-    pointer-events: none;
 }
 
 .member-name {
-    height: 24px;
-    padding: 3px 4px;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    font-size: 14px;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    pointer-events: none;
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    top: auto;
+    padding: 6px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-image.dragging {
+    opacity: 0.3;
+    transform: scale(0.95);
+}
+
+.member-image.overlay {
+    cursor: grabbing;
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 
@@ -196,11 +187,10 @@
 /* Image pool styles */
 
 .image-pool-container {
-    background-color: rgba(42, 42, 62, 0.95);
+    margin-top: 20px;
+    padding: 15px;
     border-radius: 8px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .image-pool-container h2 {
@@ -211,14 +201,13 @@
 }
 
 .image-pool {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    min-height: 140px;
-    touch-action: none;
+    padding: 16px;
+    min-height: 130px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    background-color: rgba(26, 26, 46, 0.95);
+    border-radius: 12px;
 }
 
 
@@ -277,4 +266,59 @@
 
 .MuiSwitch-root {
     margin-right: 1rem !important;
+}
+
+/* Song table styles */
+.dreamsetlist-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: rgba(26, 26, 46, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.dreamsetlist-table th,
+.dreamsetlist-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dreamsetlist-table th {
+    background-color: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.dreamsetlist-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .tierlist-page {
+        padding: 10px;
+    }
+
+    .row-header {
+        width: 80px;
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .member-image {
+        width: 80px;
+        height: 100px;
+    }
+
+    .member-image img {
+        height: 80px;
+    }
+
+    .tier-content,
+    .image-pool {
+        padding: 12px;
+        gap: 8px;
+    }
 }

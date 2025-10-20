@@ -58,3 +58,36 @@
     Proyek ini dilisensikan di bawah <a href="https://github.com/MrcellSbst/Tierlist-JKT48/blob/main/LICENSE">MIT License</a>.
   </p>
 </div>
+
+# JKT48 This or That Game
+
+## Environment Setup
+
+### Local Development
+1. Copy `.env.example` to `.env.local`:
+```bash
+cp .env.example .env.local
+```
+
+2. Get your Supabase credentials:
+   - Go to your Supabase project dashboard
+   - Click on Settings -> API
+   - Copy the following values:
+     - Project URL (from "Project Configuration")
+     - anon/public key (from "Project API keys")
+     - service_role key (Optional, from "Project API keys")
+
+3. Update `.env.local` with your actual credentials
+
+### Vercel Deployment
+1. Go to your Vercel project dashboard
+2. Navigate to Settings -> Environment Variables
+3. Add the following environment variables:
+   - `REACT_APP_SUPABASE_URL`: Your Supabase project URL
+   - `REACT_APP_SUPABASE_ANON_KEY`: Your Supabase anon/public key
+4. Deploy your project
+
+⚠️ IMPORTANT: 
+- Never commit `.env.local` to version control
+- Always use Vercel's Environment Variables for production deployments
+- Keep your Supabase keys secure and rotate them if they ever get exposed

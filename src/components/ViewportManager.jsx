@@ -8,7 +8,7 @@ const ViewportManager = () => {
         const viewport = document.querySelector('meta[name="viewport"]');
         if (viewport) {
             // Check if current route is either tierlist or tierlist_lagu
-            if (location.pathname === '/tierlist' || location.pathname === '/tierlist_lagu') {
+            if (location.pathname === '/tierlist' || location.pathname === '/tierlist_lagu' || location.pathname === '/dream_setlist') {
                 // Get the actual screen width (accounting for device pixel ratio)
                 const screenWidth = window.screen.width;
                 if (screenWidth < 1024) {

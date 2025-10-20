@@ -33,6 +33,7 @@ export const mvFiles = [
     'Musim_yang_Selanjutnya_(Tsugi_no_Season).webp',
     'Papan_Penanda_Isi_Hati.webp',
     'Pareo_adalah_Emerald.webp',
+    'Bernadya, JKT48 - Percik Kecil (Official Music Video).webp',
     'Ponytail_dan_ShuShu.webp',
     'PunkishV.webp',
     'Rapsodi.webp',
@@ -46,6 +47,7 @@ export const mvFiles = [
     'Sweet_&_Bitter.webp',
     'UZA.webp',
     'Value_Milikku_Saja.webp',
+    'Waktunya Membuktikan - JKT48 X Musikal Keluarga Cemara.webp',
     'Yuuhi_wo_Miteiruka_(Apakah_Kau_Melihat_Mentari_Senja).webp'
 ];
 
@@ -56,5 +58,5 @@ export const spvFiles = [
     'GO_AND_FIGHT!_Special_Performance_Video.webp',
     'Kebun_Binatang_Saat_Hujan.webp',
     'Langit_Biru_Cinta_Searah.webp',
-    'Only_Today_&_Musim_Panas_yang_Kacau.webp'
+    'Only_Today_&_Musim_Panas_yang_Kacau.webp', 'Raja Hati - JKT48 Special Performance Video.webp'
 ];

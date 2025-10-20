@@ -239,6 +239,24 @@ export const setlistSongs = {
         "Suifu wa Arashi ni Yume wo Miru (Pelaut yang Melihat Mimpi di Tengah Badai)",
         "Shiroi Shirts (Baju Putih)"
     ],
+    "Pertaruhan Cinta": [
+        "GO AND FIGHT!",
+        "Wish You",
+        "City Lights",
+        "Bunga yang ‘Kan Mekar Suatu Saat",
+        "Dai Dai Dai",
+        "Sahabat atau Cinta",
+        "Onyx",
+        "Percik Kecil(Theater Version)",
+        "Raja Hati",
+        "Beginner's Gamble",
+        "Ada Aku!",
+        "Dahulu",
+        "Dream",
+        "Double Standard",
+        "Cinta di Garis Horizon",
+        "Sampai Jumpa Lagi"
+    ],
     "Romansa Sang Gadis": [
         "Nagai Hikari (Cahaya Panjang)",
         "Inseki no Kakuritsu (Persentase Meteor)",
@@ -320,5 +338,6 @@ export const setlistSongs = {
         "Rakuen no Kaidan (Tangga Menuju Surga)",
         "Pinocchio Gun (Pasukan Pinokio)",
         "Tegami no Koto (Tentang Suratku)"
-    ]
+    ],
+    
 };
