@@ -1,6 +1,8 @@
 export const mvFiles = [
+    '12_Seconds.webp',
     '360°_VR_＂LOVE_TRIP＂.webp',
     '360°_VR_＂Mae_Shika_Mukanee＂_(Hanya_Lihat_Ke_Depan).webp',
+    "Andai 'Ku Bukan Idola.webp",
     'Angin_Sedang_Berhembus.webp',
     'Beginner.webp',
     'Belalang_yang_Membangkang_Trainee.webp',
@@ -10,6 +12,7 @@ export const mvFiles = [
     'Cinta_yang_Tulus,_Crescendo_(Junai_no_Crescendo).webp',
     'Dakishimecha_Ikenai_(Tidak_Boleh_Pelukan).webp',
     'Dirimu_Melody_(Kimi_wa_Melody).webp',
+    'Dekat_Namun_Jauh.webp',
     'Everyday,_Kachuusha_(Dance_Version).webp',
     'Everyday,_Kachuusha_(Story_Version).webp',
     'Flying_Get.webp',
@@ -31,6 +34,7 @@ export const mvFiles = [
     'Manatsu_no_Sounds_Good_(Musim_Panas_Sounds_Good).webp',
     'Masa_Depan_yang_Menyilaukan_Mata.webp',
     'Musim_yang_Selanjutnya_(Tsugi_no_Season).webp',
+    'Oh my pumpkin!.webp',
     'Papan_Penanda_Isi_Hati.webp',
     'Pareo_adalah_Emerald.webp',
     'Bernadya, JKT48 - Percik Kecil (Official Music Video).webp',
@@ -47,8 +51,10 @@ export const mvFiles = [
     'Sweet_&_Bitter.webp',
     'UZA.webp',
     'Value_Milikku_Saja.webp',
+    'WAKAKA_PEOPLE.webp',
     'Waktunya Membuktikan - JKT48 X Musikal Keluarga Cemara.webp',
     'Yuuhi_wo_Miteiruka_(Apakah_Kau_Melihat_Mentari_Senja).webp'
+
 ];
 
 export const spvFiles = [
