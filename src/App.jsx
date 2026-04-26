@@ -1,21 +1,41 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Box } from '@mui/material'
-import Homepage from './Homepage'
-import Tierlist from './Tierlist'
-import TierlistLagu from './Tierlist_Lagu'
-import HomepageTierlist from './HomepageTierlist'
+import Homepage, { HomepageTierlist, HomepageTools, HomepageGames } from './Homepage'
+import TierlistCombined from './Tierlist_Combined'
 import Calculator from './Calculator'
 import PointHistory from './PointHistory'
 import NotFound from './components/NotFound'
 import Footer from './components/Footer'
 import ViewportManager from './components/ViewportManager'
-import ThisOrThat from './This_or_That'
-import ToTAdmin from './ToT_admin'
-import Suggestion from './Suggestion'
 import DreamSetlist from './Dream_Setlist';
+import RoulettePage from './roulette';
+import GachaPage from './Gacha';
+import MobileTierlist from './Mobile_Tierlist';
+import GuessWho from './GuessWho';
 import './styles/App.css'
+
+
+const DisabledFeature = () => (
+  <Box
+    sx={{
+      minHeight: '60vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+      px: 3,
+    }}
+  >
+    <div>
+      <h1 className="home-title">This or That is temporarily disabled</h1>
+      <p>We&apos;re doing some maintenance on this feature. Please check back later.</p>
+      <Link to="/" className="home-button back">Back to Homepage</Link>
+    </div>
+  </Box>
+)
 
 function App() {
   return (
@@ -31,37 +51,26 @@ function App() {
         <Box sx={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<Homepage />} />
-            <Route path="/this-or-that" element={
-              <div className="home-container">
-                <h1 className="home-title">JKT48 This or That</h1>
-                <div className="home-button-container">
-                  <Link to="/this-or-that/play" className="home-button play">
-                    Play Game
-                  </Link>
-                  <Link to="/this-or-that/suggest" className="home-button suggest">
-                    Berikan Ide
-                  </Link>
-                  <Link to="/" className="home-button back">
-                    Back to Homepage
-                  </Link>
-                </div>
-              </div>
-            } />
+            <Route path="/tools" element={<HomepageTools />} />
+            <Route path="/games" element={<HomepageGames />} />
             <Route path="/homepagetierlist" element={<HomepageTierlist />} />
             <Route path="/calculator" element={<Calculator />} />
-            <Route path="/tierlist" element={<Tierlist />} />
-            <Route path="/tierlist_lagu" element={<TierlistLagu />} />
+            <Route path="/tierlist" element={<TierlistCombined />} />
+            <Route path="/tierlist_lagu" element={<TierlistCombined />} />
             <Route path="/dream-setlist" element={<DreamSetlist />} />
             <Route path="/point-history" element={<PointHistory />} />
-            <Route path="/this-or-that/play" element={<ThisOrThat />} />
-            <Route path="/this-or-that/admin" element={<ToTAdmin />} />
-            <Route path="/this-or-that/suggest" element={<Suggestion />} />
+            <Route path="/roulette" element={<RoulettePage />} />
+            <Route path="/mobile-tierlist" element={<MobileTierlist />} />
+            <Route path="/gacha" element={<GachaPage />} />
+            <Route path="/guess-who" element={<GuessWho />} />
+            <Route path="/this-or-that/*" element={<DisabledFeature />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Box>
         <Footer />
       </Box>
       <Analytics />
+      <SpeedInsights />
     </Router>
   )
 }

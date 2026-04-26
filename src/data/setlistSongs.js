@@ -137,6 +137,27 @@ export const setlistSongs = {
         "Team J Oshi",
         "Bokutachi no Kamihikouki (Pesawat Terbang Kertas Milik Kita)"
     ],
+
+    "Dream Bakudan": [
+        "Wakaka People",
+        "Sekarang Para Para",
+        "Angin Musim Semi Pertama",
+        "Tak Ingin Jadi Orang Hebat",
+        "Bird",
+        "Pulang Kampung",
+        "Dua Orang yang Terlarang",
+        "Berandalan Di Surga",
+        "Kenyataan yang Telah Ternoda",
+        "Garis Pergantian Hari Cinta",
+        "Kebenaran Tinju Ini",
+        "Rasa Sayang yang Dulu Aku Remehkan",
+        "Flying High",
+        "Team Dream Oshi",
+        "Adrenalin Masa Puber",
+        "Ingin Meraih Puncak"
+    ],
+
+
     "Fajar Sang Idola": [
         "Idol no Yoake (Fajar Sang Idola)",
         "Minasan mo go Issho ni (Bersama-sama Semuanya)",
@@ -221,6 +242,47 @@ export const setlistSongs = {
         "JKT48",
         "Skirt, Hirari"
     ],
+
+    "Itadaki Love!": [
+        "12 Seconds",
+        "Gadis yang Paling Cantik di Pinggiran Pantai",
+        "Persentase Meteor",
+        "LOVE TRIP",
+        "Berikan Coklat dengan Bibir",
+        "Pencuri Cinta Pertama",
+        "Khayalan",
+        "Cinta Tak Berbalas Karaage",
+        "Ciuman Juga Kidal",
+        "Malu-Malu Lollypop",
+        "Cowok Durian",
+        "Surat Undangan Sang Angin Laut",
+        "Rapsodi",
+        "Bersama Kamu, Pelangi dan Mentari",
+        "Suka Suka Suka",
+        "Maafkan, Summer"
+    ],
+
+
+
+
+    "Kira Kira Girls": [
+        "Indahnya Senyum Manismu DST",
+        "Aishiteraburu",
+        "Sakura Kita Makan Bersama",
+        "Laptime Masa Remaja",
+        "Candy",
+        "Hubungan Kau dan Aku",
+        "Natasha yang Ku Cinta",
+        "Maafkan Hai Permataku",
+        "100 Meter Ke Minimarket",
+        "Adyth",
+        "Cool Girl",
+        "Apakah Kau Melihat Mentari Senja",
+        "Masa Depan yang Menyilaukan Mata",
+        "Everyday Kachuusa",
+        "Gadis Remaja",
+    ],
+
     "Pajama Drive": [
         "Shonichi (Hari Pertama)",
         "Hissatsu Teleport (Jurus Rahasia Teleport)",
@@ -238,6 +300,24 @@ export const setlistSongs = {
         "Wasshoi J!",
         "Suifu wa Arashi ni Yume wo Miru (Pelaut yang Melihat Mimpi di Tengah Badai)",
         "Shiroi Shirts (Baju Putih)"
+    ],
+    "Passion 200%": [
+        "Dekat Namun Jauh",
+        "Cinta Tak Berbalas Finally",
+        "Keringat Itu Tidak Berbohong",
+        "Langit Biru Cinta Searah",
+        "End Roll",
+        "Si Bintang Jatuh yang Egois",
+        "Pada Malam yang Berbadai",
+        "Sang Hujan yang Kejam",
+        "Musim Panas yang Kacau",
+        "Bentuk Sang Rembulan",
+        "Kapasitas Ikan Migrasi",
+        "Fan Letter",
+        "Magic Hour",
+        "Beloklah ke Kanan!",
+        "Cinta Pertama Butterfly",
+        "Pareo Adalah Emerald"
     ],
     "Pertaruhan Cinta": [
         "GO AND FIGHT!",
@@ -339,5 +419,7 @@ export const setlistSongs = {
         "Pinocchio Gun (Pasukan Pinokio)",
         "Tegami no Koto (Tentang Suratku)"
     ],
-    
+
+
+
 };
