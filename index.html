@@ -48,6 +48,10 @@
 
 <body>
     <div id="root"></div>
+    <script type="module">
+        import { insertCoin } from "https://esm.sh/playroomkit";
+        window.insertCoin = insertCoin;
+      </script>
     <script type="module" src="/src/main.jsx"></script>
 </body>
 

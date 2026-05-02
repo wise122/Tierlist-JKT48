@@ -13,6 +13,7 @@ import {
 } from 'playroomkit';
 import * as memberData from './data/memberData';
 import './GuessWho.css';
+import { socket } from "./socket";
 
 // ─── Name formatter (exact same logic as Tierlist.jsx) ───────────────────────
 const formatMemberName = (filename) => {
@@ -213,6 +214,119 @@ function MenuScreen({ onPick }) {
 // ONLINE LOBBY (Create vs Join choice) + Nickname picker
 // ────────────────────────────────────────────────────────────────────────────
 function OnlineLobbyScreen({ onBack, onCreateRoom, onJoinRoom, nickname, onNicknameChange }) {
+    const [matching, setMatching] = useState(false);
+    const [matchData, setMatchData] = useState(null);
+    const waitForPlayroom = () =>
+  new Promise((resolve) => {
+    const interval = setInterval(() => {
+      if (window.insertCoin) {
+        clearInterval(interval);
+        resolve(true);
+      }
+    }, 100);
+  });
+  const handleHost = async (matchId) => {
+    if (window.__creatingRoom) return;
+    window.__creatingRoom = true;
+  
+    console.log("HOST bikin room...");
+    console.log("BEFORE");
+  
+    try {
+      // 🔥 reset dulu
+      if (window.leaveRoom) {
+        try {
+          await window.leaveRoom();
+        } catch (e) {}
+      }
+  
+      // 🔥 tunggu stabil
+      await new Promise(r => setTimeout(r, 800));
+  
+      const res = await insertCoin({
+        gameId: "NjbnsUWfKVCgQkci92xc",
+        matchmaking: false
+      });
+  
+      console.log("AFTER", res);
+  
+      if (!res?.roomCode) {
+        console.error("Room code kosong!", res);
+        return;
+      }
+  
+      socket.emit("room_ready", {
+        matchId,
+        playroomCode: res.roomCode,
+      });
+  
+    } catch (err) {
+      console.error("ERROR:", err);
+    }
+  };
+     // =========================
+  // LISTENER SOCKET
+  // =========================
+  useEffect(() => {
+    let isHostRef = false;
+    let hasJoined = false;
+  
+    const onMatchFound = ({ matchId, isHost }) => {
+      console.log("MATCH:", matchId, isHost);
+  
+      isHostRef = isHost;
+  
+      if (isHost) {
+        handleHost(matchId);
+      }
+    };
+  
+    const onRoomReady = async ({ playroomCode }) => {
+      // ❗ host gak boleh join lagi
+      if (isHostRef) return;
+  
+      // ❗ cegah double join
+      if (hasJoined) return;
+      hasJoined = true;
+  
+      console.log("JOIN ROOM:", playroomCode);
+  
+      if (!playroomCode) {
+        console.error("Room code kosong!");
+        return;
+      }
+  
+      await window.insertCoin({
+        gameId: "NjbnsUWfKVCgQkci92xc",
+        roomCode: playroomCode,
+        matchmaking: false
+      });
+    };
+  
+    socket.on("match_found", onMatchFound);
+    socket.on("room_ready", onRoomReady);
+  
+    return () => {
+      socket.off("match_found", onMatchFound);
+      socket.off("room_ready", onRoomReady);
+    };
+  }, []);
+
+    const onAutoMatch = () => {
+        if (matching) return;
+        setMatching(true);
+        socket.off("match_found");
+        socket.emit("find_match", { nickname });
+        socket.once("match_found", ({ matchId, isHost }) => {
+            console.log("MATCH:", matchId, isHost);
+          
+            if (isHost) {
+              handleHost(matchId);
+            } else {
+              socket.emit("check_room", { matchId });
+            }
+          });
+    };
     const handleNick = (e) => {
         // Allow letters, numbers, spaces only — max 25
         const val = e.target.value.replace(/[^a-zA-Z0-9 ]/g, '').slice(0, 25);
@@ -260,6 +374,25 @@ function OnlineLobbyScreen({ onBack, onCreateRoom, onJoinRoom, nickname, onNickn
                     <div className="gw-menu-card-label">Join Room</div>
                     <div className="gw-menu-card-desc">Masukkan kode room yang dibagikan oleh host untuk langsung bermain.</div>
                 </button>
+                <button className="gw-menu-card" onClick={onAutoMatch} disabled={!nickOk || matching}>
+                    <div className="gw-menu-card-icon">⚡</div>
+                    <div className="gw-menu-card-label">{matching ? "Mencari..." : "Cari Lawan"}</div>
+                    <div className="gw-menu-card-desc"> {matching  ? "Sedang mencari pemain lain, mohon tunggu sebentar...": "Temukan lawan secara otomatis dan langsung mulai permainan."}</div>
+                </button>
+                <button
+  onClick={async () => {
+    console.log("TEST CLICK");
+
+    const res = await window.insertCoin({
+      gameId: "NjbnsUWfKVCgQkci92xc",
+      matchmaking: false
+    });
+
+    console.log("RESULT:", res);
+  }}
+>
+  TEST PLAYROOM
+</button>
             </div>
         </div>
     );
